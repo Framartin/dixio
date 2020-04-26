@@ -32,17 +32,21 @@ def index():
 
 class PlayNamespace(Namespace):
     games = {}
+    id_player2room = {}
+    id_player2username = {}
 
     def on_error(e):
         app.logger.error('Error: {0}'.format(e))
         emit('error', {'message': 'An error has occurred: {0}'.format(e)})
 
     def on_connect(self):
-        session['id'] = session.get('id', str(uuid4()))
+        session['id_player'] = session.get('id_player', str(uuid4()))
         # create fake name if not already set
         lang = request.accept_languages.best_match(FAKER_LOCALES)
         session['username'] = session.get('username', Faker(lang).name())
-        emit('status', {'message': 'Waiting to join a game', 'action_needed': False})
+        self.id_player2room[session['id_player']] = request.sid # TODO : do not support multiple room
+        self.id_player2username[session['id_player']] = session['username']
+        #emit('status', {'message': 'Waiting to join a game', 'status': 'lobby', 'action_needed': False})
 
     def on_join(self, message):
         # create game if don't exist
@@ -50,58 +54,63 @@ class PlayNamespace(Namespace):
             if len(self.games) >= MAX_NB_GAMES:
                 raise MaxNumberGamesError('Cannot create new game. The maximum number of games was reached. Try '
                                           'again later.')
-            self.games[message['room']] = {
-                'game': None,
-                'players': [],
-            }
-        self.games[message['room']]['players'].append(session['id_player'])
+            self.games[message['room']] = DixitGame()
+        self.games[message['room']].add_player(session['id_player'])
         join_room(message['room'])
 
-    def on_ask_status(self, message):
+    def on_get_status(self, message):
         game = self.games.get(message['room'])
-        if game is None: (, 0, False)
-        message, code, action_needed = \
+        status, message_status, action_needed = game.get_status_message_action(session.get('id_player'))
+        emit('status',  {'message': message_status, 'status': status, 'action_needed': action_needed})
 
-        emit('status', )
+    def on_start_game(self, message):
+        game = self.games.get(message['room'])
+        game.start_game()
+        emit('update_status', room=message['room'])
+        emit('update_hand', room=message['room'])
 
-    def on_create_game(self, message):
-        try:
-            self.games[message['room']]['game'] = DixitGame(ids_players=self.games[message['room']]['players'])
-        except NumberPlayersError as e:
-            emit('error', {'message': str(e)})
-            return
-        emit('status', {'message': 'Game starts! Wait for the first storyteller to play.'},
-             room=message['room'])
-        # TODO : emit to story teller with action_required
-        # Send their cards to every player
+    def on_get_hand(self, message):
+        game = self.games.get(message['room'])
+        emit('hand', {'ids_cards': game.get_hand(session.get('id_player'))})
 
     def on_tell(self, message):
-        try:
-            self.games[message['room']]['game'].tell(id_player=session.get('id'),
-                                                     id_card=message['id_card'],
-                                                     description=message['description'])
-        except Exception as e:
-            emit('error', {'message': str(e)})
-            return
-        emit('status', {
-            'message': "{0} told a story. Choose your best card that describe".format(session.get('username'))
-        },
-             room=message['room'])
-        # send action required
+        game = self.games.get(message['room'])
+        game.tell(id_player=session.get('id_player'),
+                  id_card=message['id_card'],
+                  description=message['description'])
+        emit('update_status', room=message['room'])
+        emit('update_hand')
 
-    def on_leave(self, message):
-        leave_room(message['room'])
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('my_response',
-             {'data': 'In rooms: ' + ', '.join(rooms()),
-              'count': session['receive_count']})
+    def on_play(self, message):
+        game = self.games.get(message['room'])
+        game.tell(id_player=session.get('id_player'),
+                  id_card=message['id_card'])
+        emit('update_status', room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
+        emit('update_hand')
 
-    def on_close_room(self, message):
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
-                             'count': session['receive_count']},
-             room=message['room'])
-        close_room(message['room'])
+    def on_get_table(self, message):
+        game = self.games.get(message['room'])
+        emit('table', {'ids_cards': game.get_table(session.get('id_player'))})
+
+    def on_vote(self, message):
+        game = self.games.get(message['room'])
+        game.vote(id_player=session.get('id_player'),
+                  id_card=message['id_card'])
+        emit('update_status', room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
+
+    # def on_leave(self, message):
+    #     leave_room(message['room'])
+    #     session['receive_count'] = session.get('receive_count', 0) + 1
+    #     emit('my_response',
+    #          {'data': 'In rooms: ' + ', '.join(rooms()),
+    #           'count': session['receive_count']})
+
+    # def on_close_room(self, message):
+    #     session['receive_count'] = session.get('receive_count', 0) + 1
+    #     emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
+    #                          'count': session['receive_count']},
+    #          room=message['room'])
+    #     close_room(message['room'])
 
     def on_my_room_event(self, message):
         session['receive_count'] = session.get('receive_count', 0) + 1
@@ -115,19 +124,10 @@ class PlayNamespace(Namespace):
              {'data': 'Disconnected!', 'count': session['receive_count']})
         disconnect()
 
-    def on_my_event(self, message):
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('my_response',
-             {'data': message['data'], 'count': session['receive_count']})
-
-    def on_my_broadcast_event(self, message):
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('my_response',
-             {'data': message['data'], 'count': session['receive_count']},
-             broadcast=True)
-
     def on_disconnect(self):
-        print('Client disconnected', request.sid)
+        id_player = session.get('id_player')
+        del self.id_player2room[id_player]
+        # del self.id_player2username[id_player]  # TODO: have to keep id_player if reconnect
 
 
 socketio.on_namespace(PlayNamespace('/play'))
