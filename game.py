@@ -33,6 +33,23 @@ class DixitGame:
         self.past_turns = []
         self.hands = self.ids_players_turn_generator = self.current_turn = None
 
+    def _sanity_check(self, id_player, id_card=None):
+        if id_player not in self.ids_players:
+            raise ValueError('Player not in game')
+        if id_card is not None:
+            if id_card not in self.hands[id_player]:
+                raise ValueError("Card not in player's hand")
+
+    def _distribute(self):
+        """
+        Distribute one card to each player
+        """
+        if len(self.pile) < len(self.ids_players):
+            raise GameEndedError("Game ended")
+        for id_player in self.ids_players:
+            id_card = self.pile.pop()
+            self.hands[id_player].append(id_card)
+
     def get_status_message_action(self, id_player):
         self._sanity_check(id_player=id_player)
         action_needed = False
@@ -103,23 +120,6 @@ class DixitGame:
         for _ in range(0, 6):
             self._distribute()
         self.status = 'tell'
-
-    def _distribute(self):
-        """
-        Distribute one card to each player
-        """
-        if len(self.pile) < len(self.ids_players):
-            raise GameEndedError("Game ended")
-        for id_player in self.ids_players:
-            id_card = self.pile.pop()
-            self.hands[id_player].append(id_card)
-
-    def _sanity_check(self, id_player, id_card=None):
-        if id_player not in self.ids_players:
-            raise ValueError('Player not in game')
-        if id_card is not None:
-            if id_card not in self.hands[id_player]:
-                raise ValueError("Card not in player's hand")
 
     def get_hand(self, id_player):
         self._sanity_check(id_player=id_player)
@@ -229,11 +229,14 @@ class DixitGame:
         # distribute new cards
         self.status = 'tell'
 
-    def get_points_table_vote_last_turn(self):
+    def get_last_turn(self):
         last_turn = self.past_turns[-1]
-        return last_turn['points'], last_turn['table'], last_turn['vote']
-
-    def get_stats(self):
         return {
-            'points': self.points,
+            'points': last_turn['points'],
+            'table': last_turn['table'],
+            'vote': last_turn['vote'],
         }
+
+    @property
+    def get_points(self):
+        return dict(self.points)  #TODO: return username as keys
