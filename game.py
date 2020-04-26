@@ -86,6 +86,8 @@ class DixitGame:
             self.ids_players.append(id_player)
 
     def start_game(self):
+        if self.status != 'lobby':
+            raise ActionImpossibleNow('The game has already started.')
         if len(self.ids_players) not in [4, 5, 6]:
             raise NumberPlayersError("There must be between 4 and 6 players.")
         shuffle(self.ids_players)
