@@ -1,6 +1,6 @@
 from random import shuffle
 from itertools import cycle
-from collections import Counter
+from collections import Counter, OrderedDict
 from datetime import datetime
 
 NB_CARDS = 84
@@ -96,7 +96,7 @@ class DixitGame:
         self.ids_players_turn_generator = cycle(ids_players)
         self.current_turn = {
             'id_player_storyteller': next(self.ids_players_turn_generator),
-            'table': {},
+            'table': OrderedDict(),
             'description': None,
             'votes': {},
         }
@@ -151,15 +151,17 @@ class DixitGame:
             raise ValueError("The storyteller cannot play")
         self.hands[id_player].remove(id_card)
         self.current_turn['table'][id_player] = id_card
-        if len(current_turn['table']) == len(self.ids_players):
+        if len(self.current_turn['table']) == len(self.ids_players):
             self.status = 'vote'
+            # shuffle table
+            items = list(self.current_turn['table'].items())
+            shuffle(items)
+            self.current_turn['table'] = OrderedDict(items)
 
     def get_table(self):
-        if len(self.current_turn['table']) != len(self.ids_players):
+        if self.status not in ['vote', 'end_turn', 'end_game']:
             raise NotReadyToVoteError("Election not ready")
-        table_ids_cards = self.current_turn['table'].values()
-        shuffle(table_ids_cards)
-        return table_ids_cards
+        return list(self.current_turn['table'].values())
 
     def vote(self, id_player, id_card):
         """
@@ -220,7 +222,7 @@ class DixitGame:
         # set next storytellers
         self.current_turn = {
             'id_player_storyteller': next(self.ids_players_turn_generator),
-            'table': {},
+            'table': OrderedDict(),
             'description': None,
             'votes': {},
         }
