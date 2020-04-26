@@ -93,7 +93,8 @@ class DixitGame:
             message = 'See the results of this turn. Next turn incoming.'
         elif status == 'end_game':
             message = 'Game ended!'
-        else NotImplementedError('Error with game status: {0}'.format(status))
+        else:
+            raise NotImplementedError('Error with game status: {0}'.format(status))
         return status, message, action_needed
 
     def add_player(self, id_player):
