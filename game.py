@@ -93,7 +93,7 @@ class DixitGame:
         self.hands = {x: [] for x in ids_players}
         self.ids_players_turn_generator = cycle(ids_players)
         self.current_turn = {
-            'id_player_storyteller': next(self.ids_players_turn),
+            'id_player_storyteller': next(self.ids_players_turn_generator),
             'table': {},
             'description': None,
             'votes': {},
