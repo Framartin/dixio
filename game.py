@@ -24,7 +24,7 @@ class DixitGame:
 
     def __init__(self):
         self.datetime_start = datetime.utcnow()
-        self.points = Counter()
+        self._points = Counter()
         self.status = 'lobby'
         self.ids_players = []
         self.pile = list(range(1, NB_CARDS + 1))
@@ -93,7 +93,7 @@ class DixitGame:
         elif status == 'end_turn':
             message = 'See the results of this turn. Next turn incoming.'
         elif status == 'end_game':
-            message = 'Game ended!'
+            message = 'Game ended! Results are below.'
         else:
             raise NotImplementedError('Error with game status: {0}'.format(status))
         return status, message, action_needed, description
@@ -110,7 +110,7 @@ class DixitGame:
     def start_game(self):
         if self.status != 'lobby':
             raise ActionImpossibleNow('The game has already started.')
-        if len(self.ids_players) not in [4, 5, 6]:
+        if len(self.ids_players) not in [2, 4, 5, 6]:
             raise NumberPlayersError("There must be between 4 and 6 players.")
         shuffle(self.ids_players)
         shuffle(self.pile)
@@ -139,7 +139,7 @@ class DixitGame:
         if len(description) <= 2:
             raise ValueError("Description should not be empty")
         self.hands[id_player].remove(id_card)
-        self.current_turn['id_player_storyteller'] = id_player
+        #self.current_turn['id_player_storyteller'] = id_player
         self.current_turn['description'] = description
         self.current_turn['table'][id_player] = id_card
         self.status = 'play'
@@ -167,7 +167,7 @@ class DixitGame:
 
     def get_table(self):
         if self.status not in ['vote', 'end_turn', 'end_game']:
-            raise NotReadyToVoteError("Election not ready")
+            return []  # return empty list if table is updated before vote
         return list(self.current_turn['table'].values())
 
     def vote(self, id_player, id_card):
@@ -177,20 +177,20 @@ class DixitGame:
         :param id_card:
         :return: True if all other players have cast their vote
         """
-        self._sanity_check(id_player=id_player, id_card=id_card)
+        self._sanity_check(id_player=id_player) # do not check that id_card is in hand of player
         if id_player == self.current_turn['id_player_storyteller']:
             raise ValueError("The storyteller cannot vote")
         if id_card == self.current_turn["table"][id_player]:
             raise ValueError("You cannot vote for your own card")
-        self.current_turn['table'][id_player] = id_card
-        if len(self.current_turn['vote']) == len(self.ids_players) - 1:
+        self.current_turn['votes'][id_player] = id_card
+        if len(self.current_turn['votes']) == len(self.ids_players) - 1:
             self._update_points_with_current_turn()
             self.status = 'end_turn'
 
     def _update_points_with_current_turn(self):
-        if len(current_turn['table']) != len(self.ids_players):
+        if len(self.current_turn['table']) != len(self.ids_players):
             raise ValueError("Some cards missing")
-        if len(self.current_turn['vote']) != len(self.ids_players) - 1:
+        if len(self.current_turn['votes']) != len(self.ids_players) - 1:
             raise ValueError("Not all players has voted")
         points_current_turn = Counter()
         id_player_storyteller = self.current_turn['id_player_storyteller']
@@ -198,24 +198,24 @@ class DixitGame:
         ids_players_others = self.ids_players.copy()
         ids_players_others.remove(id_player_storyteller)
         # if all players voted for the same card (ie. all or nobody for the storyteller's one)
-        if len(set(self.current_turn['vote'].values())) == 1:
+        if len(set(self.current_turn['votes'].values())) == 1:
             for id_player in ids_players_others:
                 points_current_turn[id_player] += 2
         else:
             points_current_turn[id_player_storyteller] += 3
             for id_player in ids_players_others:
                 # 3 points for others players who correctly guessed
-                if self.current_turn['vote'][id_player] == self.current_turn['table'][id_player_storyteller]:
+                if self.current_turn['votes'][id_player] == self.current_turn['table'][id_player_storyteller]:
                     points_current_turn[id_player] += 3
                 # if wrong vote, add 1 point for the card owner
                 else:
                     # extract card owner
                     id_player_owner_list = [k for k, v in self.current_turn['table'].items() if
-                                            v == self.current_turn['vote'][id_player]]
+                                            v == self.current_turn['votes'][id_player]]
                     if len(id_player_owner_list) != 1:
                         raise RuntimeError("Could not extract who place the card")
                     points_current_turn[id_player_owner_list[0]] += 1
-        self.points += points_current_turn
+        self._points += points_current_turn
         self.current_turn['points'] = points_current_turn
 
     def end_turn(self):
@@ -237,13 +237,15 @@ class DixitGame:
         self.status = 'tell'
 
     def get_last_turn(self):
+        if len(self.past_turns) < 1:
+            return None
         last_turn = self.past_turns[-1]
         return {
             'points': last_turn['points'],
             'table': last_turn['table'],
-            'vote': last_turn['vote'],
+            'votes': last_turn['votes'],
         }
 
     @property
-    def get_points(self):
-        return dict(self.points)  #TODO: return username as keys
+    def points(self):
+        return {k: self._points[k] for k in self.ids_players}
