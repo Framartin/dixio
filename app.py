@@ -6,19 +6,19 @@ from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
 from uuid import uuid4
 from faker import Faker
 from faker.config import AVAILABLE_LOCALES as FAKER_LOCALES
-from game import DixitGame, NumberPlayersError
+from game import DixitGame
 
 # REPLACE SECRET KEY AND SET DEBUG TO False BEFORE DEPLOYMENT
 SECRET_KEY = "REPLACE_ME"
 DEBUG = True
-MAX_NB_GAMES = 1000
+MAX_NB_GAMES = 100
 async_mode = "eventlet"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app, async_mode=async_mode)
-thread = None
-thread_lock = Lock()
+# thread = None
+# thread_lock = Lock()
 
 
 class MaxNumberGamesError(Exception):
@@ -27,17 +27,24 @@ class MaxNumberGamesError(Exception):
 
 @app.route('/')
 def index():
-    return render_template('index.html', async_mode=socketio.async_mode)
+    return render_template('index.html')
+
+@app.route('/game/<game_name>')
+def game_route(game_name):
+    return render_template('game.html', game_name=game_name)
+
+@socketio.on_error(namespace='/play')
+def play_error_handler(e):
+    app.logger.error('Error: {0}'.format(e))
+    emit('notification_error', {'message': 'Error: {0}'.format(e)})
+    if DEBUG:
+        raise e
 
 
 class PlayNamespace(Namespace):
     games = {}
     id_player2room = {}
     id_player2username = {}
-
-    def on_error(e):
-        app.logger.error('Error: {0}'.format(e))
-        emit('error', {'message': 'An error has occurred: {0}'.format(e)})
 
     def on_connect(self):
         session['id_player'] = session.get('id_player', str(uuid4()))
@@ -60,8 +67,8 @@ class PlayNamespace(Namespace):
 
     def on_get_status(self, message):
         game = self.games.get(message['room'])
-        status, message_status, action_needed = game.get_status_message_action(session.get('id_player'))
-        emit('status',  {'message': message_status, 'status': status, 'action_needed': action_needed})
+        status, message_status, action_needed, description = game.get_status_message_action_description(session.get('id_player'))
+        emit('status',  {'message': message_status, 'status': status, 'action_needed': action_needed, 'description': description})
 
     def on_start_game(self, message):
         game = self.games.get(message['room'])
@@ -83,9 +90,10 @@ class PlayNamespace(Namespace):
 
     def on_play(self, message):
         game = self.games.get(message['room'])
-        game.tell(id_player=session.get('id_player'),
+        game.play(id_player=session.get('id_player'),
                   id_card=message['id_card'])
         emit('update_status', room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
+        emit('update_hand')
         emit('update_hand')
 
     def on_get_table(self, message):
@@ -112,22 +120,23 @@ class PlayNamespace(Namespace):
     #          room=message['room'])
     #     close_room(message['room'])
 
-    def on_my_room_event(self, message):
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('my_response',
-             {'data': message['data'], 'count': session['receive_count']},
-             room=message['room'])
+    # def on_my_room_event(self, message):
+    #     session['receive_count'] = session.get('receive_count', 0) + 1
+    #     emit('my_response',
+    #          {'data': message['data'], 'count': session['receive_count']},
+    #          room=message['room'])
 
-    def on_disconnect_request(self):
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('my_response',
-             {'data': 'Disconnected!', 'count': session['receive_count']})
-        disconnect()
+    # def on_disconnect_request(self):
+    #     session['receive_count'] = session.get('receive_count', 0) + 1
+    #     emit('my_response',
+    #          {'data': 'Disconnected!', 'count': session['receive_count']})
+    #     disconnect()
 
     def on_disconnect(self):
         id_player = session.get('id_player')
         del self.id_player2room[id_player]
         # del self.id_player2username[id_player]  # TODO: have to keep id_player if reconnect
+        # TODO: delete game if nobody is left on the party?
 
 
 socketio.on_namespace(PlayNamespace('/play'))
