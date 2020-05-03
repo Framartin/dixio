@@ -58,12 +58,13 @@
         $('#start').remove();
         // update the text of the status
         // color in yellow if action is needed from the player
-        $('#notification_status').text(msg.message);
+        var status_notif = $('#notification_status')
+        status_notif.text(msg.message);
         if (msg.action_needed) {
-          $('#notification_status').addClass('is-warning').removeClass('is-info');
-          $('#notification_status').append('<br><b>It\'s your turn.</b>').show();
+          status_notif.addClass('is-warning').removeClass('is-info');
+          status_notif.append('<br><b>It\'s your turn.</b>').show();
         } else {
-          $('#status').addClass('is-info').removeClass('is-warning');
+          status_notif.addClass('is-info').removeClass('is-warning');
         }
         // remove disable on description field if turn of story teller
         var description_input = $('#description_input');
@@ -74,8 +75,12 @@
         }
         // update current description
         $('#p_description').text(msg.description);
-        // create table if needed
+        // if vote, update table
+        if (msg.status === 'vote') {
+          socket.emit('get_table', {room: game_name});
+        }
       });
+
       // replace images in hand
       function updateHand(value, index, array) {
         $('#hand').children().eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
