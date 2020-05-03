@@ -13,10 +13,8 @@ class GameEndedError(Exception):
 class NumberPlayersError(ValueError):
     pass
 
-
 class ActionImpossibleNow(Exception):
     pass
-
 
 class NotReadyToVoteError(ActionImpossibleNow):
     pass
@@ -50,10 +48,13 @@ class DixitGame:
             id_card = self.pile.pop()
             self.hands[id_player].append(id_card)
 
-    def get_status_message_action(self, id_player):
+    def get_status_message_action_description(self, id_player):
         self._sanity_check(id_player=id_player)
         action_needed = False
         status = self.status
+        description = None
+        if self.current_turn is not None:
+            description = self.current_turn['description']
         # not all players have joined
         if status == 'lobby':
             message = 'You\'re in the game. Wait for other players and start the game if everyone is ready'
@@ -95,9 +96,12 @@ class DixitGame:
             message = 'Game ended!'
         else:
             raise NotImplementedError('Error with game status: {0}'.format(status))
-        return status, message, action_needed
+        return status, message, action_needed, description
 
     def add_player(self, id_player):
+        if id_player in self.ids_players:
+            # TODO : if player reload webpage, update personnal room id. Then deconnect previous page or keep both?
+            return
         if self.status != 'lobby':
             raise ActionImpossibleNow('You cannot join. The game has already started.')
         if id_player not in self.ids_players:
@@ -110,8 +114,8 @@ class DixitGame:
             raise NumberPlayersError("There must be between 4 and 6 players.")
         shuffle(self.ids_players)
         shuffle(self.pile)
-        self.hands = {x: [] for x in ids_players}
-        self.ids_players_turn_generator = cycle(ids_players)
+        self.hands = {x: [] for x in self.ids_players}
+        self.ids_players_turn_generator = cycle(self.ids_players)
         self.current_turn = {
             'id_player_storyteller': next(self.ids_players_turn_generator),
             'table': OrderedDict(),
@@ -132,6 +136,8 @@ class DixitGame:
             raise ActionImpossibleNow("Impossible to tell at this stage")
         if id_player != self.current_turn['id_player_storyteller']:
             raise ValueError("Only the storyteller can vote")
+        if len(description) <= 2:
+            raise ValueError("Description should not be empty")
         self.hands[id_player].remove(id_card)
         self.current_turn['id_player_storyteller'] = id_player
         self.current_turn['description'] = description
