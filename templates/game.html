@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DixIO Game -- {{ game_name }}</title>
+  <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+  <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+      // Use a "/test" namespace.
+      // An application can open a connection on multiple namespaces, and
+      // Socket.IO will multiplex all those connections on a single
+      // physical channel. If you don't care about multiple channels, you
+      // can set the namespace to an empty string.
+      namespace = '/play';
+      game_name = '{{ game_name }}'
+
+      // Connect to the Socket.IO server.
+      // The connection URL has the following format, relative to the current page:
+      //     http[s]://<domain>:<port>[/<namespace>]
+      var socket = io(namespace);
+
+      // Event handler for new connections.
+      // The callback function is invoked when a connection with the
+      // server is established.
+      socket.on('connect', function() {
+        socket.emit('join', {room: game_name});
+        // TODO: dirty wait
+        setTimeout(function(){socket.emit('get_status', {room: game_name});}, 1000);
+      });
+
+      // Event handler for printing error
+      socket.on('notification_error', function(msg) {
+        $('#notification_error').append(
+                '<div class="notification is-danger is-light">\n' +
+                '  <button class="delete"></button>\n' +
+                $('<div/>').text(msg.message).html() +
+                '</div>');
+      });
+      // server ask to update status or hand
+      socket.on('update_status', function() {
+        socket.emit('get_status', {room: game_name});
+      });
+      socket.on('update_hand', function() {
+        socket.emit('get_hand', {room: game_name});
+      });
+      // receive current status of game and update elements
+      socket.on('status', function(msg) {
+        // do nothing more if the game haven't started
+        if (msg.status === 'lobby') {
+          return false;
+        }
+        // delete start button
+        $('#start').remove();
+        // update the text of the status
+        // color in yellow if action is needed from the player
+        $('#notification_status').text(msg.message);
+        if (msg.action_needed) {
+          $('#notification_status').addClass('is-warning').removeClass('is-info');
+          $('#notification_status').append('<br><b>It\'s your turn.</b>').show();
+        } else {
+          $('#status').addClass('is-info').removeClass('is-warning');
+        }
+        // remove disable on description field if turn of story teller
+        var description_input = $('#description_input');
+        if (msg.status === 'tell' && msg.action_needed) {
+          description_input.prop("disabled", false);
+        } else {
+          description_input.prop("disabled", true);
+        }
+        // update current description
+        $('#p_description').text(msg.description);
+        // create table if needed
+      });
+      // replace images in hand
+      function updateHand(value, index, array) {
+        $('#hand').children().eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
+        $('#hand').children().eq(index).data('card-id', value);
+      }
+      socket.on('hand', function(msg) {
+        $('#hand').find('img').attr('src', '/static/img/placeholder.png'); // when play a card, the hand has 1 card less, so we replace all by placeholder before updating them
+        msg.ids_cards.forEach(updateHand);
+      });
+      // replace image in table
+      function updateTable(value, index, array) {
+        $('#table').children().eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
+        $('#table').children().eq(index).data('card-id', value);
+      }
+      socket.on('table', function(msg) {
+        msg.ids_cards.forEach(updateTable);
+      });
+      // handle tell
+      $('#hand').on('click','.card', function(){
+        var id_card = $(this).data('card-id');
+        var description =  $('#description_input').val();
+        var description_disabled = $('#description_input').prop('disabled');
+        // check if input is read only to know if the storyteller is telling or if an other player is playing a card
+        if (description_disabled === true) {
+          socket.emit('play', {room: game_name, id_card: id_card});
+        } else {
+          socket.emit('tell', {room: game_name, id_card: id_card, description: description});
+        }
+      });
+
+      // Handlers for the different forms in the page.
+      // These accept data from the user and send it to the server in a
+      // variety of ways
+      $('form#start').submit(function(event) {
+        socket.emit('start_game', {room: game_name});
+        return false;
+      });
+      // delete error notification
+      $('#notification_error').on('click','.delete', function(){
+        $(this).parent().remove();
+      });
+    });
+  </script>
+</head>
+<body>
+<!-- header -->
+<section class="section">
+  <div class="container">
+    <h1 class="title">
+      DixIO
+    </h1>
+    <p class="subtitle">
+      Game {{ game_name }}
+    </p>
+  </div>
+</section>
+<section class="section">
+  <!-- error notification -->
+  <div id="notification_error" class="container">
+  </div>
+  <!-- normal message -->
+  <div id="status" class="container">
+    <div id="notification_status" class="notification is-info is-light">
+      <!-- TODO : replace by message class https://bulma.io/documentation/components/message/ -->
+    </div>
+  </div>
+  <!-- button to start game -->
+  <div class="container">
+    <form id="start" method="POST" action='#'>
+      <input type="submit" class="button is-primary" value="Start Game">
+    </form>
+  </div>
+
+  <!-- description display -->
+  <div class="container">
+    <h2 class="title is-3">Current description</h2>
+    <p id="p_description">Not set yet</p>
+  </div>
+
+  <!-- table -->
+  <div class="container">
+    <h2 class="title is-3">Table</h2>
+  </div>
+
+  <div class="container">
+    <div id="table" class="columns">
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 2">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 3">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 4">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 5">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 6">
+      </div>
+    </div>
+  </div>
+
+  <!-- hand -->
+  <div class="container">
+    <h2 class="title is-3">Your hand</h2>
+  </div>
+
+  <div id="description_field" class="field">
+  <label class="label">Enter description</label>
+  <div class="control">
+    <input id="description_input" class="input is-primary is-rounded" type="text" placeholder="The description of the chosen card" disabled>
+  </div>
+  <p class="help">The description can be a single word, multiple words, an entire sentence, a quote,
+    a extract of a song, etc. It should not be too simple (e.g. "A shell on the beach") nor too hard</p>
+  </div>
+
+  <div class="container">
+    <div id="hand" class="columns">
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>
