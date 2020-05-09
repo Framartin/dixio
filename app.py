@@ -17,8 +17,6 @@ async_mode = "eventlet"
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app, async_mode=async_mode)
-# thread = None
-# thread_lock = Lock()
 
 
 class MaxNumberGamesError(Exception):
@@ -29,9 +27,16 @@ class MaxNumberGamesError(Exception):
 def index():
     return render_template('index.html')
 
+
 @app.route('/game/<game_name>')
 def game_route(game_name):
-    return render_template('game.html', game_name=game_name)
+    # set player's session, if not already set
+    session['id_player'] = session.get('id_player', str(uuid4()))
+    # create fake name if not already set
+    lang = request.accept_languages.best_match(FAKER_LOCALES)
+    session['username'] = session.get('username', Faker(lang).name())
+    return render_template('game.html', game_name=game_name, username=session['username'])
+
 
 @socketio.on_error(namespace='/play')
 def play_error_handler(e):
@@ -43,17 +48,12 @@ def play_error_handler(e):
 
 class PlayNamespace(Namespace):
     games = {}
-    id_player2room = {}
+    #id_player2room = {}
     id_player2username = {}
 
     def on_connect(self):
-        session['id_player'] = session.get('id_player', str(uuid4()))
-        # create fake name if not already set
-        lang = request.accept_languages.best_match(FAKER_LOCALES)
-        session['username'] = session.get('username', Faker(lang).name())
-        self.id_player2room[session['id_player']] = request.sid # TODO : do not support multiple room
+        #self.id_player2room[session['id_player']] = request.sid  # TODO : do not support multiple room
         self.id_player2username[session['id_player']] = session['username']
-        #emit('status', {'message': 'Waiting to join a game', 'status': 'lobby', 'action_needed': False})
 
     def on_join(self, message):
         # create game if don't exist
@@ -67,8 +67,10 @@ class PlayNamespace(Namespace):
 
     def on_get_status(self, message):
         game = self.games.get(message['room'])
-        status, message_status, action_needed, description = game.get_status_message_action_description(session.get('id_player'))
-        emit('status',  {'message': message_status, 'status': status, 'action_needed': action_needed, 'description': description})
+        status, message_status, action_needed, description = game.get_status_message_action_description(
+            session.get('id_player'))
+        emit('status',
+             {'message': message_status, 'status': status, 'action_needed': action_needed, 'description': description})
 
     def on_start_game(self, message):
         game = self.games.get(message['room'])
@@ -92,19 +94,57 @@ class PlayNamespace(Namespace):
         game = self.games.get(message['room'])
         game.play(id_player=session.get('id_player'),
                   id_card=message['id_card'])
-        emit('update_status', room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
-        emit('update_hand')
+        emit('update_status',
+             room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
         emit('update_hand')
 
     def on_get_table(self, message):
         game = self.games.get(message['room'])
-        emit('table', {'ids_cards': game.get_table(session.get('id_player'))})
+        emit('table', {'ids_cards': game.get_table()})
 
     def on_vote(self, message):
         game = self.games.get(message['room'])
         game.vote(id_player=session.get('id_player'),
                   id_card=message['id_card'])
-        emit('update_status', room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
+        # if turn ended on that vote, start new turn, add new card in hand, clear table
+        if game.status == 'end_turn':
+            game.end_turn()
+            emit('update_hand', room=message['room'])
+            emit('update_table', room=message['room'])
+            emit('update_last_turn', room=message['room'])
+        emit('update_status', room=message['room'])
+
+    def on_get_last_turn(self, message):
+        game = self.games.get(message['room'])
+        last_turn_dict = game.get_last_turn()  # points, table, votes
+        if last_turn_dict is None:
+            return
+        id_player = session.get('id_player')
+        last_turn = []
+        for k, v in last_turn_dict['table'].items():  # TODO
+            # k: id_player, v: id_card
+            last_turn.append({
+                'username': self.id_player2username[k],
+                'id_card': v,
+                'points': last_turn_dict['points'][k],
+                'usernames_voters': [self.id_player2username[k2] for k2, v2 in last_turn_dict['votes'].items() if v2 == v],
+                'highlight': k == id_player,  # highlight if current player # TODO : support it in HTML
+            })
+        emit('last_turn', {'last_turn': last_turn})
+
+    def on_get_points(self, message):
+        game = self.games.get(message['room'])
+        points_dict = game.points
+        id_player = session.get('id_player')
+        table_points = []
+        for k, v in points_dict.items():
+            # k: id_player, v: nb of points
+            table_points.append({
+                'username': self.id_player2username[k],
+                'points': v,
+                'highlight': k == id_player,  # highlight if current player
+            })
+        emit('points', {'points': table_points})
 
     # def on_leave(self, message):
     #     leave_room(message['room'])
