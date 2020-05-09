@@ -62,15 +62,33 @@ class PlayNamespace(Namespace):
                 raise MaxNumberGamesError('Cannot create new game. The maximum number of games was reached. Try '
                                           'again later.')
             self.games[message['room']] = DixitGame()
-        self.games[message['room']].add_player(session['id_player'])
+        game = self.games.get(message['room'])
+        game.add_player(session['id_player'])
         join_room(message['room'])
+        # send status
+        status, message_status, action_needed, description = game.get_status_message_action_description(
+            session.get('id_player'))
+        emit('status',
+             {
+                 'message': message_status,
+                 'status': status,
+                 'action_needed': action_needed,
+                 'description': description,
+                 'on_join': True,
+             })
 
     def on_get_status(self, message):
         game = self.games.get(message['room'])
         status, message_status, action_needed, description = game.get_status_message_action_description(
             session.get('id_player'))
         emit('status',
-             {'message': message_status, 'status': status, 'action_needed': action_needed, 'description': description})
+             {
+                 'message': message_status,
+                 'status': status,
+                 'action_needed': action_needed,
+                 'description': description,
+                 'on_join': False,
+             })
 
     def on_start_game(self, message):
         game = self.games.get(message['room'])
@@ -87,16 +105,19 @@ class PlayNamespace(Namespace):
         game.tell(id_player=session.get('id_player'),
                   id_card=message['id_card'],
                   description=message['description'])
-        emit('update_status', room=message['room'])
         emit('update_hand')
+        emit('update_status', room=message['room'])
 
     def on_play(self, message):
         game = self.games.get(message['room'])
         game.play(id_player=session.get('id_player'),
                   id_card=message['id_card'])
-        emit('update_status',
-             room=message['room'])  # TODO : only update everyone at status change to limit asynchrone issue
         emit('update_hand')
+        # update everyone status to update message that contains number of players remaining
+        emit('update_status', room=message['room'])
+        # update table if status has changed
+        if game.status != 'play':
+            emit('update_table', room=message['room'])
 
     def on_get_table(self, message):
         game = self.games.get(message['room'])
@@ -109,9 +130,9 @@ class PlayNamespace(Namespace):
         # if turn ended on that vote, start new turn, add new card in hand, clear table
         if game.status == 'end_turn':
             game.end_turn()
-            emit('update_hand', room=message['room'])
             emit('update_table', room=message['room'])
             emit('update_last_turn', room=message['room'])
+            emit('update_hand', room=message['room'])
         emit('update_status', room=message['room'])
 
     def on_get_last_turn(self, message):
@@ -127,7 +148,8 @@ class PlayNamespace(Namespace):
                 'username': self.id_player2username[k],
                 'id_card': v,
                 'points': last_turn_dict['points'][k],
-                'usernames_voters': [self.id_player2username[k2] for k2, v2 in last_turn_dict['votes'].items() if v2 == v],
+                'usernames_voters': [self.id_player2username[k2] for k2, v2 in last_turn_dict['votes'].items() if
+                                     v2 == v],
                 'highlight': k == id_player,  # highlight if current player # TODO : support it in HTML
             })
         emit('last_turn', {'last_turn': last_turn})
@@ -174,7 +196,7 @@ class PlayNamespace(Namespace):
 
     def on_disconnect(self):
         id_player = session.get('id_player')
-        del self.id_player2room[id_player]
+        #del self.id_player2room[id_player]
         # del self.id_player2username[id_player]  # TODO: have to keep id_player if reconnect
         # TODO: delete game if nobody is left on the party?
 
