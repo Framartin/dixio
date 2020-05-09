@@ -29,9 +29,8 @@
       // server is established.
       socket.on('connect', function() {
         socket.emit('join', {room: game_name});
-        // TODO: dirty wait
-        setTimeout(function(){socket.emit('get_status', {room: game_name});}, 1000);
       });
+      // nothing to do on join, the server will send the status
 
       // Event handler for printing error
       socket.on('notification_error', function(msg) {
@@ -41,21 +40,21 @@
                 $('<div/>').text(msg.message).html() +
                 '</div>');
       });
-      // server ask to update status or hand
+      // server ask to update status or hand or last turn
       socket.on('update_status', function() {
         socket.emit('get_status', {room: game_name});
       });
       socket.on('update_hand', function() {
         socket.emit('get_hand', {room: game_name});
       });
+      socket.on('update_table', function() {
+        socket.emit('get_table', {room: game_name});
+      });
+      socket.on('update_last_turn', function() {
+        socket.emit('get_last_turn', {room: game_name});
+      });
       // receive current status of game and update elements
       socket.on('status', function(msg) {
-        // do nothing more if the game haven't started
-        if (msg.status === 'lobby') {
-          return false;
-        }
-        // delete start button
-        $('#start').remove();
         // update the text of the status
         // color in yellow if action is needed from the player
         var status_notif = $('#notification_status')
@@ -66,18 +65,32 @@
         } else {
           status_notif.addClass('is-info').removeClass('is-warning');
         }
+        // do nothing more if the game haven't started
+        if (msg.status === 'lobby') {
+          return false;
+        }
+        // delete start button
+        $('#start').remove();
         // remove disable on description field if turn of story teller
         var description_input = $('#description_input');
         if (msg.status === 'tell' && msg.action_needed) {
           description_input.prop("disabled", false);
+          description_input.val('');
         } else {
           description_input.prop("disabled", true);
         }
         // update current description
         $('#p_description').text(msg.description);
-        // if vote, update table
-        if (msg.status === 'vote') {
+        // if the page was (re)loaded, update everything and do nothing more
+        if (msg.on_join) {
+          socket.emit('get_hand', {room: game_name});
           socket.emit('get_table', {room: game_name});
+          socket.emit('get_points', {room: game_name});
+          socket.emit('get_last_turn', {room: game_name});
+          return false;
+        }
+        if (msg.status === 'end_game') {
+          socket.emit('get_points', {room: game_name});
         }
       });
 
@@ -88,19 +101,65 @@
       }
       socket.on('hand', function(msg) {
         $('#hand').find('img').attr('src', '/static/img/placeholder.png'); // when play a card, the hand has 1 card less, so we replace all by placeholder before updating them
+        $('#hand').find('img').data('card-id', 'placeholder');
         msg.ids_cards.forEach(updateHand);
       });
+
       // replace image in table
       function updateTable(value, index, array) {
         $('#table').children().eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
         $('#table').children().eq(index).data('card-id', value);
       }
       socket.on('table', function(msg) {
+        $('#table').find('img').attr('src', '/static/img/placeholder.png');
+        $('#table').find('img').data('card-id', 'placeholder');
         msg.ids_cards.forEach(updateTable);
       });
-      // handle tell
+
+      // display points
+      var points_level = $('#points_level');
+      function updatePoints(value, index, array) {
+        points_level.append(
+          '<div class="level-item has-text-centered">' +
+          '  <div>' +
+          '    <p class="heading">'+$('<p/>').text(value.username).html()+'</p>' +
+          '    <p class="title">'  +$('<p/>').text(value.points).html()+'</p>' +
+          '  </div>' +
+          '</div>'
+        );
+        if (value.highlight) {
+          points_level.children().last().addClass('has-text-primary has-background-grey-lighter');
+        }
+      }
+      socket.on('points', function(msg) {
+        points_level.empty();
+        msg.points.forEach(updatePoints);
+      });
+
+      // handle last turn
+      var last_turn_div = $('#last_turn');
+      function updateCardLastTurn(value, index, array) {
+        var card = last_turn_div.children().eq(index);
+        card.find('.gamecard > img').attr('src', '/static/img/dixit/'+value.id_card+'.png');
+        card.find('.card-owner').text(value.username);
+        card.find('.card-points').text(value.points);
+        var list_voterscard = card.find('.list-voters');
+        list_voterscard.empty();
+        value.usernames_voters.forEach(wrapInLi);
+        function wrapInLi(username_voter) {
+          list_voterscard.append('<li>'+$('<div/>').text(username_voter).html()+'</li>');
+        }
+      }
+      socket.on('last_turn', function(msg) {
+        msg.last_turn.forEach(updateCardLastTurn);
+      });
+
+      // handle tell and play from hand
       $('#hand').on('click','.card', function(){
         var id_card = $(this).data('card-id');
+        if (id_card === 'placeholder'){
+          return false;
+        }
         var description =  $('#description_input').val();
         var description_disabled = $('#description_input').prop('disabled');
         // check if input is read only to know if the storyteller is telling or if an other player is playing a card
@@ -109,6 +168,14 @@
         } else {
           socket.emit('tell', {room: game_name, id_card: id_card, description: description});
         }
+      });
+      // handle vote from table
+      $('#table').on('click','.card', function(){
+        var id_card = $(this).data('card-id');
+        if (id_card === 'placeholder'){
+          return false;
+        }
+        socket.emit('vote', {room: game_name, id_card: id_card});
       });
 
       // Handlers for the different forms in the page.
@@ -133,7 +200,7 @@
       DixIO
     </h1>
     <p class="subtitle">
-      Game {{ game_name }}
+      Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name }}!
     </p>
   </div>
 </section>
@@ -160,7 +227,44 @@
     <p id="p_description">Not set yet</p>
   </div>
 
-  <!-- table -->
+  <!-- hand -->
+  <div class="container">
+    <h2 class="title is-3">Your hand</h2>
+  </div>
+
+  <div id="description_field" class="field">
+  <label class="label">Enter description</label>
+  <div class="control">
+    <input id="description_input" class="input is-primary is-rounded" type="text" placeholder="The description of the chosen card" disabled>
+  </div>
+  <p class="help">The description can be a single word, multiple words, an entire sentence, a quote,
+    a extract of a song, etc. It should not be too simple (e.g. "A shell on the beach") nor too hard</p>
+  </div>
+
+  <div class="container">
+    <div id="hand" class="columns">
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 1">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 2">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 3">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 4">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 5">
+      </div>
+      <div class="column card gamecard" data-card-id="placeholder">
+        <img src="/static/img/placeholder.png" alt="Card 6">
+      </div>
+    </div>
+  </div>
+
+    <!-- table -->
   <div class="container">
     <h2 class="title is-3">Table</h2>
   </div>
@@ -188,42 +292,162 @@
     </div>
   </div>
 
-  <!-- hand -->
+  <!-- current points -->
   <div class="container">
-    <h2 class="title is-3">Your hand</h2>
+    <h2 class="title is-3">Points</h2>
+  </div>
+  <nav id="points_level" class="level">
+  </nav>
+
+  <!-- result last turn -->
+  <div class="container">
+    <h2 class="title is-3">Last turn</h2>
   </div>
 
-  <div id="description_field" class="field">
-  <label class="label">Enter description</label>
-  <div class="control">
-    <input id="description_input" class="input is-primary is-rounded" type="text" placeholder="The description of the chosen card" disabled>
-  </div>
-  <p class="help">The description can be a single word, multiple words, an entire sentence, a quote,
-    a extract of a song, etc. It should not be too simple (e.g. "A shell on the beach") nor too hard</p>
-  </div>
-
-  <div class="container">
-    <div id="hand" class="columns">
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+    <div class="container">
+    <div id="last_turn" class="columns">
+      <!-- first card-->
+      <div class="column card">
+        <div class="card-image">
+          <figure class="image is-2by3 gamecard">
+            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <p class="title card-owner"></p>
+            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+          </div>
+          <div class="media">
+            <div class="media-left">
+              <p>Voters:</p>
+            </div>
+            <div class="media-content">
+              <ul class="list-voters">
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+      <!-- another card -->
+      <div class="column card">
+        <div class="card-image">
+          <figure class="image is-2by3 gamecard">
+            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <p class="title card-owner"></p>
+            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+          </div>
+          <div class="media">
+            <div class="media-left">
+              <p>Voters:</p>
+            </div>
+            <div class="media-content">
+              <ul class="list-voters">
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+      <!-- another card -->
+      <div class="column card">
+        <div class="card-image">
+          <figure class="image is-2by3 gamecard">
+            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <p class="title card-owner"></p>
+            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+          </div>
+          <div class="media">
+            <div class="media-left">
+              <p>Voters:</p>
+            </div>
+            <div class="media-content">
+              <ul class="list-voters">
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+      <!-- another card -->
+      <div class="column card">
+        <div class="card-image">
+          <figure class="image is-2by3 gamecard">
+            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <p class="title card-owner"></p>
+            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+          </div>
+          <div class="media">
+            <div class="media-left">
+              <p>Voters:</p>
+            </div>
+            <div class="media-content">
+              <ul class="list-voters">
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+      <!-- another card -->
+      <div class="column card">
+        <div class="card-image">
+          <figure class="image is-2by3 gamecard">
+            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <p class="title card-owner"></p>
+            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+          </div>
+          <div class="media">
+            <div class="media-left">
+              <p>Voters:</p>
+            </div>
+            <div class="media-content">
+              <ul class="list-voters">
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+      <!-- another card -->
+      <div class="column card">
+        <div class="card-image">
+          <figure class="image is-2by3 gamecard">
+            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <p class="title card-owner"></p>
+            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+          </div>
+          <div class="media">
+            <div class="media-left">
+              <p>Voters:</p>
+            </div>
+            <div class="media-content">
+              <ul class="list-voters">
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
+      <!-- another card -->
     </div>
   </div>
+
 </section>
 </body>
 </html>
