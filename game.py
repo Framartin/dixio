@@ -100,7 +100,6 @@ class DixitGame:
 
     def add_player(self, id_player):
         if id_player in self.ids_players:
-            # TODO : if player reload webpage, update personnal room id. Then deconnect previous page or keep both?
             return
         if self.status != 'lobby':
             raise ActionImpossibleNow('You cannot join. The game has already started.')
