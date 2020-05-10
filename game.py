@@ -181,6 +181,8 @@ class DixitGame:
             raise ValueError("The storyteller cannot vote")
         if id_card == self.current_turn["table"][id_player]:
             raise ValueError("You cannot vote for your own card")
+        if id_card not in self.current_turn['table']:
+            raise ValueError("Card not in table")
         self.current_turn['votes'][id_player] = id_card
         if len(self.current_turn['votes']) == len(self.ids_players) - 1:
             self._update_points_with_current_turn()
