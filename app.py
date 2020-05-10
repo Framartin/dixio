@@ -95,6 +95,7 @@ class PlayNamespace(Namespace):
         game.start_game()
         emit('update_status', room=message['room'])
         emit('update_hand', room=message['room'])
+        emit('update_points', room=message['room'])
 
     def on_get_hand(self, message):
         game = self.games.get(message['room'])
@@ -133,6 +134,7 @@ class PlayNamespace(Namespace):
             emit('update_table', room=message['room'])
             emit('update_last_turn', room=message['room'])
             emit('update_hand', room=message['room'])
+            emit('update_points', room=message['room'])
         emit('update_status', room=message['room'])
 
     def on_get_last_turn(self, message):

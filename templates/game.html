@@ -53,6 +53,9 @@
       socket.on('update_last_turn', function() {
         socket.emit('get_last_turn', {room: game_name});
       });
+      socket.on('update_points', function() {
+        socket.emit('get_points', {room: game_name});
+      });
       // receive current status of game and update elements
       socket.on('status', function(msg) {
         // update the text of the status
