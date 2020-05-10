@@ -176,7 +176,9 @@ class DixitGame:
         :param id_card:
         :return: True if all other players have cast their vote
         """
-        self._sanity_check(id_player=id_player) # do not check that id_card is in hand of player
+        self._sanity_check(id_player=id_player)  # do not check that id_card is in hand of player
+        if self.status != 'vote':
+            raise ActionImpossibleNow("Impossible to vote at this stage")
         if id_player == self.current_turn['id_player_storyteller']:
             raise ValueError("The storyteller cannot vote")
         if id_card == self.current_turn["table"][id_player]:
