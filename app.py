@@ -10,7 +10,7 @@ from game import DixitGame
 
 # REPLACE SECRET KEY AND SET DEBUG TO False BEFORE DEPLOYMENT
 SECRET_KEY = "REPLACE_ME"
-DEBUG = True
+DEBUG = False
 MAX_NB_GAMES = 100
 async_mode = "eventlet"
 
