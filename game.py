@@ -24,7 +24,7 @@ class NotReadyToVoteError(ActionImpossibleNow):
 
 class DixitGame:
 
-    def __init__(self):
+    def __init__(self, debug=False):
         self.datetime_start = datetime.utcnow()
         self._points = Counter()
         self.status = 'lobby'
@@ -32,6 +32,7 @@ class DixitGame:
         self.pile = list(range(1, NB_CARDS + 1))
         self.past_turns = []
         self.hands = self.ids_players_turn_generator = self.current_turn = None
+        self.debug = debug
 
     def _sanity_check(self, id_player, id_card=None):
         if id_player not in self.ids_players:
@@ -111,7 +112,8 @@ class DixitGame:
     def start_game(self):
         if self.status != 'lobby':
             raise ActionImpossibleNow('The game has already started.')
-        if len(self.ids_players) not in [2, 4, 5, 6]:
+        # check number of player
+        if len(self.ids_players) not in [4, 5, 6] and not self.debug:
             raise NumberPlayersError("There must be between 4 and 6 players.")
         shuffle(self.ids_players)
         shuffle(self.pile)
@@ -232,6 +234,7 @@ class DixitGame:
     def end_turn(self):
         # save current turn
         self.past_turns.append(self.current_turn)
+        # distribute new cards
         try:
             self._distribute()
         except GameEndedError:
@@ -244,7 +247,6 @@ class DixitGame:
             'description': None,
             'votes': {},
         }
-        # distribute new cards
         self.status = 'tell'
 
     def get_last_turn(self):

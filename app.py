@@ -61,7 +61,7 @@ class PlayNamespace(Namespace):
             if len(self.games) >= MAX_NB_GAMES:
                 raise MaxNumberGamesError('Cannot create new game. The maximum number of games was reached. Try '
                                           'again later.')
-            self.games[message['room']] = DixitGame()
+            self.games[message['room']] = DixitGame(debug=DEBUG)
         game = self.games.get(message['room'])
         game.add_player(session['id_player'])
         join_room(message['room'])
