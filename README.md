@@ -1,15 +1,15 @@
-# OpenDixit
+# DixIO
 
 KISS implementation of famous board game Dixit in Python with Flask-SocketIO
 
 ## Features
 
-- **KISS**: no account, no lobby, no password. Just share a link to your friends. 
+- **KISS**: no account, no lobby, no password. Just share your game link to your friends
 - Support multiple games from same browser
 
 ## Limitations
 
-- It's impossible to change browser during a game
+- Not possible to change browser during a game
 
 ## Set up you own server
 
@@ -25,7 +25,8 @@ pip install -r requirements.txt
 - Configure the server:
     - Set a strong `SECRET_KEY`, for example by running `python -c 'import os; print(os.urandom(16))'`
     - Make sure that `DEBUG` is set to `False`
-    
+- You may need the [Deployment section](https://flask-socketio.readthedocs.io/en/latest/#deployment) of the Flask-SocketIO documentation
+
 ### Run the server
 
 ```
