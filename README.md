@@ -2,10 +2,13 @@
 
 KISS implementation of famous board game Dixit in Python with Flask-SocketIO
 
+> Created with love and care during the COVID-19 pandemic to be able to play with family and friends 😷💌🏩
+
 ## Features
 
 - **KISS**: no account, no lobby, no password. Just share your game link to your friends
 - Support multiple games from same browser
+- No database, no flat-file, the current games are loaded on RAM.
 
 ## Limitations
 
