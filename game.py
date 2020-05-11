@@ -13,8 +13,10 @@ class GameEndedError(Exception):
 class NumberPlayersError(ValueError):
     pass
 
+
 class ActionImpossibleNow(Exception):
     pass
+
 
 class NotReadyToVoteError(ActionImpossibleNow):
     pass
@@ -76,7 +78,7 @@ class DixitGame:
                     message = 'Choose a card among your hand that correspond best with the storyteller\'s description.'
                     action_needed = True
                 else:
-                    nb_missing_cards = len(self.ids_players)-len(self.current_turn['table'])
+                    nb_missing_cards = len(self.ids_players) - len(self.current_turn['table'])
                     message = 'Wait for other players to play a card ({0} missing).'.format(nb_missing_cards)
         # wait for other players to vote
         elif status == 'vote':
@@ -87,7 +89,7 @@ class DixitGame:
                     message = 'Vote for 1 card on the table that you think is the one of the storyteller.'
                     action_needed = True
                 else:
-                    nb_missing_cards = len(self.ids_players)-len(self.current_turn['votes'])-1
+                    nb_missing_cards = len(self.ids_players) - len(self.current_turn['votes']) - 1
                     message = 'Wait for other players to vote ({0} missing).'.format(nb_missing_cards)
         # give some time for players to see results of this turn, before starting a new one
         elif status == 'end_turn':
@@ -138,7 +140,7 @@ class DixitGame:
         if len(description) <= 2:
             raise ValueError("Description should not be empty")
         self.hands[id_player].remove(id_card)
-        #self.current_turn['id_player_storyteller'] = id_player
+        # self.current_turn['id_player_storyteller'] = id_player
         self.current_turn['description'] = description
         self.current_turn['table'][id_player] = id_card
         self.status = 'play'
@@ -200,24 +202,30 @@ class DixitGame:
         # list of players except storyteller
         ids_players_others = self.ids_players.copy()
         ids_players_others.remove(id_player_storyteller)
-        # if all players voted for the same card (ie. all or nobody for the storyteller's one)
-        if len(set(self.current_turn['votes'].values())) == 1:
+        # count number of votes for the storyteller's card
+        id_card_storyteller = self.current_turn['table'][id_player_storyteller]
+        id_players_vote_for_storyteller = [k for k, v in self.current_turn['votes'].items() if
+                                           v == id_card_storyteller]
+        # if all other players or nobody voted the storyteller's card, add 2 points for other players
+        if len(id_players_vote_for_storyteller) in [0, len(ids_players_others)]:
             for id_player in ids_players_others:
                 points_current_turn[id_player] += 2
+        # else, add +3 points to storyteller and to others players that vote for storyteller's card
         else:
             points_current_turn[id_player_storyteller] += 3
-            for id_player in ids_players_others:
+            for id_player in id_players_vote_for_storyteller:
                 # 3 points for others players who correctly guessed
-                if self.current_turn['votes'][id_player] == self.current_turn['table'][id_player_storyteller]:
-                    points_current_turn[id_player] += 3
-                # if wrong vote, add 1 point for the card owner
-                else:
-                    # extract card owner
-                    id_player_owner_list = [k for k, v in self.current_turn['table'].items() if
-                                            v == self.current_turn['votes'][id_player]]
-                    if len(id_player_owner_list) != 1:
-                        raise RuntimeError("Could not extract who place the card")
-                    points_current_turn[id_player_owner_list[0]] += 1
+                points_current_turn[id_player] += 3
+        # add +1 point for each vote for other players' cards
+        id_players_vote_not_storyteller = list(set(ids_players_others) - set(id_players_vote_for_storyteller))
+        for id_player in id_players_vote_not_storyteller:
+            # for each player who didn't vote for the storyteller, add 1 point to the card owner
+            id_player_owner_list = [k for k, v in self.current_turn['table'].items() if
+                                    v == self.current_turn['votes'][id_player]]
+            if len(id_player_owner_list) != 1:
+                raise RuntimeError("Could not extract who place the card")
+            points_current_turn[id_player_owner_list[0]] += 1
+
         self._points += points_current_turn
         self.current_turn['points'] = points_current_turn
 
