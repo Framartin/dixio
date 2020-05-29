@@ -6,12 +6,16 @@ from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
 from uuid import uuid4
 from faker import Faker
 from faker.config import AVAILABLE_LOCALES as FAKER_LOCALES
+from random import sample
+from datetime import datetime, timedelta
 from game import DixitGame
 
 # REPLACE SECRET KEY AND SET DEBUG TO False BEFORE DEPLOYMENT
 SECRET_KEY = "REPLACE_ME"
 DEBUG = False
-MAX_NB_GAMES = 100
+MAX_NB_GAMES = 500
+MAX_NB_GAMES_CHECK = 50
+MAX_MINUTES_GAME_TIME = 6*60
 async_mode = "eventlet"
 
 app = Flask(__name__)
@@ -58,6 +62,13 @@ class PlayNamespace(Namespace):
     def on_join(self, message):
         # create game if don't exist
         if message['room'] not in self.games:
+            # clean old room
+            sample_game_name = sample(self.games.keys(), min(len(self.games), MAX_NB_GAMES_CHECK))  # sample a list
+            # of maximum MAX_NB_GAMES_CHECK games
+            for game_name in sample_game_name:
+                if (datetime.utcnow() - self.games[game_name].datetime_start) > timedelta(minutes=MAX_MINUTES_GAME_TIME):
+                    self.games.pop(game_name)
+            # check if possible to create new one
             if len(self.games) >= MAX_NB_GAMES:
                 raise MaxNumberGamesError('Cannot create new game. The maximum number of games was reached. Try '
                                           'again later.')
@@ -198,6 +209,7 @@ class PlayNamespace(Namespace):
 
     def on_disconnect(self):
         id_player = session.get('id_player')
+        # TODO remove player for game if in lobby
         #del self.id_player2room[id_player]
         # del self.id_player2username[id_player]  # TODO: have to keep id_player if reconnect
         # TODO: delete game if nobody is left on the party?
