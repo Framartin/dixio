@@ -51,7 +51,7 @@ class DixioGame:
             id_card = self.pile.pop()
             self.hands[id_player].append(id_card)
 
-    def get_status_message_action_description(self, id_player):
+    def get_status_dict(self, id_player, on_join=False):
         self._sanity_check(id_player=id_player)
         action_needed = False
         status = self.status
@@ -99,7 +99,13 @@ class DixioGame:
             message = 'Game ended! Results are below.'
         else:
             raise NotImplementedError('Error with game status: {0}'.format(status))
-        return status, message, action_needed, description
+        return {
+                 'message': message,
+                 'status': status,
+                 'action_needed': action_needed,
+                 'description': description,
+                 'on_join': on_join,
+             }
 
     def add_player(self, id_player):
         if id_player in self.ids_players:

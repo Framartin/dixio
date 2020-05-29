@@ -77,29 +77,13 @@ class PlayNamespace(Namespace):
         game.add_player(session['id_player'])
         join_room(message['room'])
         # send status
-        status, message_status, action_needed, description = game.get_status_message_action_description(
-            session.get('id_player'))
-        emit('status',
-             {
-                 'message': message_status,
-                 'status': status,
-                 'action_needed': action_needed,
-                 'description': description,
-                 'on_join': True,
-             })
+        status_dict = game.get_status_dict(session.get('id_player'), on_join=True)
+        emit('status', status_dict)
 
     def on_get_status(self, message):
         game = self.games.get(message['room'])
-        status, message_status, action_needed, description = game.get_status_message_action_description(
-            session.get('id_player'))
-        emit('status',
-             {
-                 'message': message_status,
-                 'status': status,
-                 'action_needed': action_needed,
-                 'description': description,
-                 'on_join': False,
-             })
+        status_dict = game.get_status_dict(session.get('id_player'), on_join=False)
+        emit('status', status_dict)
 
     def on_start_game(self, message):
         game = self.games.get(message['room'])
@@ -163,7 +147,7 @@ class PlayNamespace(Namespace):
                 'points': last_turn_dict['points'][k],
                 'usernames_voters': [self.id_player2username[k2] for k2, v2 in last_turn_dict['votes'].items() if
                                      v2 == v],
-                'highlight': k == id_player,  # highlight if current player # TODO : support it in HTML
+                'highlight': k == id_player,  # highlight if current player
             })
         emit('last_turn', {'last_turn': last_turn})
 
