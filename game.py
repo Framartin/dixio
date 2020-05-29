@@ -105,6 +105,7 @@ class DixioGame:
                  'action_needed': action_needed,
                  'description': description,
                  'on_join': on_join,
+                 'nb_cards_pile': len(self.pile),
              }
 
     def add_player(self, id_player):

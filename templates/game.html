@@ -84,6 +84,8 @@
         }
         // update current description
         $('#p_description').text(msg.description);
+        // update number of cards remaining
+        $('#b_nb_cards_pile').text(msg.nb_cards_pile);
         // if the page was (re)loaded, update everything and do nothing more
         if (msg.on_join) {
           socket.emit('get_hand', {room: game_name});
@@ -227,7 +229,9 @@
   <!-- description display -->
   <div class="container">
     <h2 class="title is-3">Current description</h2>
-    <p id="p_description">Not set yet</p>
+    <p>
+      <b id="p_description">Not set yet</b>
+    </p>
   </div>
 
   <!-- hand -->
@@ -449,6 +453,12 @@
       </div>
       <!-- another card -->
     </div>
+  </div>
+
+  <!-- current pile -->
+  <div class="container">
+    <h2 class="title is-3">Pile</h2>
+    <p>Cards remaining: <b id="b_nb_cards_pile"></b></p>
   </div>
 
 </section>
