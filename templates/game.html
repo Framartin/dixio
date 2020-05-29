@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DixIO — Game {{ game_name }}</title>
+  <title>DixIO — Game {{ game_name|replace("_", " ")|title }}</title>
   <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
@@ -203,7 +203,7 @@
       DixIO
     </h1>
     <p class="subtitle">
-      Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name }}!
+      Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|replace("_", " ")|title }}!
     </p>
   </div>
 </section>
