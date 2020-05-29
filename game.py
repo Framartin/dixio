@@ -22,7 +22,7 @@ class NotReadyToVoteError(ActionImpossibleNow):
     pass
 
 
-class DixitGame:
+class DixioGame:
 
     def __init__(self, debug=False):
         self.datetime_start = datetime.utcnow()

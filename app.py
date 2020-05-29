@@ -8,7 +8,7 @@ from faker import Faker
 from faker.config import AVAILABLE_LOCALES as FAKER_LOCALES
 from random import sample
 from datetime import datetime, timedelta
-from game import DixitGame
+from game import DixioGame
 
 # REPLACE SECRET KEY AND SET DEBUG TO False BEFORE DEPLOYMENT
 SECRET_KEY = "REPLACE_ME"
@@ -72,7 +72,7 @@ class PlayNamespace(Namespace):
             if len(self.games) >= MAX_NB_GAMES:
                 raise MaxNumberGamesError('Cannot create new game. The maximum number of games was reached. Try '
                                           'again later.')
-            self.games[message['room']] = DixitGame(debug=DEBUG)
+            self.games[message['room']] = DixioGame(debug=DEBUG)
         game = self.games.get(message['room'])
         game.add_player(session['id_player'])
         join_room(message['room'])
