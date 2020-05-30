@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% block head %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DixIO — {% block title %}{% endblock %}</title>
+  <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+  <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  {% endblock %}
+</head>
+<body>
+<!-- header -->
+<section class="section">
+  <div class="container">
+    <h1 class="title">
+      DixIO
+    </h1>
+    <p class="subtitle">
+      {% block subtitle %}{% endblock %}
+    </p>
+  </div>
+</section>
+<section class="section">
+  {% block content %}{% endblock %}
+</section>
+
+<footer class="footer">
+  <div class="content has-text-centered">
+    <p>
+      {% block footer %}
+      <strong>DixIO</strong> by <a href="https://github.com/Framartin/dixio">Framartin</a>. The source code is licensed
+      <a href="https://github.com/Framartin/dixio/blob/master/LICENSE">GPL</a>. The cards, designed by Marie Cardouat,
+      are copyrighted by Libellud, and the original game authored by Jean-Louis Roubira.
+      {% endblock %}
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
