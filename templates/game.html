@@ -54,10 +54,10 @@
         // update the text of the status
         // color in yellow if action is needed from the player
         var status_notif = $('#notification_status')
-        status_notif.text(msg.message);
+        status_notif.find('p').eq(0).text(msg.message);
         if (msg.action_needed) {
           status_notif.addClass('is-warning').removeClass('is-info');
-          status_notif.append('<br><b>It\'s your turn.</b>').show();
+          status_notif.find('p').eq(0).append('<br><b>It\'s your turn.</b>').show();
           // $('#audio_bell')[0].play();  // play bell sound
         } else {
           status_notif.addClass('is-info').removeClass('is-warning');
@@ -202,13 +202,18 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
   <div id="status" class="container">
     <div id="notification_status" class="notification is-info is-light">
       <!-- TODO : replace by message class https://bulma.io/documentation/components/message/ -->
+      <div class="columns">
+        <div class="column is-narrow">
+          <!-- button to start game -->
+          <form id="start" method="POST" action='#'>
+            <input type="submit" class="button is-primary" value="Start Game">
+          </form>
+        </div>
+        <div class="column">
+          <p></p>
+        </div>
+      </div>
     </div>
-  </div>
-  <!-- button to start game -->
-  <div class="container">
-    <form id="start" method="POST" action='#'>
-      <input type="submit" class="button is-primary" value="Start Game">
-    </form>
   </div>
 
   <!-- description display -->
