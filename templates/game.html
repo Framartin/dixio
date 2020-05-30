@@ -10,7 +10,7 @@
       // physical channel. If you don't care about multiple channels, you
       // can set the namespace to an empty string.
       namespace = '/play';
-      game_name = '{{ game_name }}'
+      game_name = '{{ game_name }}';
 
       // Connect to the Socket.IO server.
       // The connection URL has the following format, relative to the current page:
@@ -53,21 +53,26 @@
       socket.on('status', function(msg) {
         // update the text of the status
         // color in yellow if action is needed from the player
-        var status_notif = $('#notification_status')
+        var status_notif = $('#notification_status');
+        var button_turn_indicator = $('#button_turn_indicator');
         status_notif.find('p').eq(0).text(msg.message);
         if (msg.action_needed) {
           status_notif.addClass('is-warning').removeClass('is-info');
           status_notif.find('p').eq(0).append('<br><b>It\'s your turn.</b>').show();
+          button_turn_indicator.addClass('is-warning is-loading').removeClass('is-info');
           // $('#audio_bell')[0].play();  // play bell sound
         } else {
           status_notif.addClass('is-info').removeClass('is-warning');
+          button_turn_indicator.addClass('is-info').removeClass('is-warning is-loading');
         }
         // do nothing more if the game haven't started
         if (msg.status === 'lobby') {
+          button_turn_indicator.hide();
           return false;
         }
         // delete start button
-        $('#start').remove();
+        $('#button_start').remove();
+        button_turn_indicator.show();
         // remove disable on description field if turn of story teller
         var description_input = $('#description_input');
         if (msg.status === 'tell' && msg.action_needed) {
@@ -180,7 +185,7 @@
       // Handlers for the different forms in the page.
       // These accept data from the user and send it to the server in a
       // variety of ways
-      $('form#start').submit(function(event) {
+      $('form#button_start').submit(function(event) {
         socket.emit('start_game', {room: game_name});
         return false;
       });
@@ -200,33 +205,46 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
   </div>
   <!-- normal message -->
   <div id="status" class="container">
+    <div class="columns">
+      <div class="column">
     <div id="notification_status" class="notification is-info is-light">
       <!-- TODO : replace by message class https://bulma.io/documentation/components/message/ -->
       <div class="columns">
         <div class="column is-narrow">
           <!-- button to start game -->
-          <form id="start" method="POST" action='#'>
+          <form id="button_start" method="POST" action='#'>
             <input type="submit" class="button is-primary" value="Start Game">
           </form>
+          <button id="button_turn_indicator" class="button is-hovered is-loading">
+            <span class="icon is-small">
+              <i class="fas fa-check"></i>
+            </span>
+          </button>
         </div>
         <div class="column">
           <p></p>
         </div>
+        </div>
+        </div>
       </div>
+       <div class="column is-one-fifth">
+          <p class="bd-notification is-info">Cards remaining: <b id="b_nb_cards_pile"></b></p>
+       </div>
+
     </div>
   </div>
 
-  <!-- description display -->
-  <div class="container">
-    <h2 class="title is-3">Current description</h2>
-    <p>
-      <b id="p_description">Not set yet</b>
-    </p>
-  </div>
-
-  <!-- hand -->
-  <div class="container">
-    <h2 class="title is-3">Your hand</h2>
+<!-- description display -->
+<div class="container">
+  <h2 class="title is-3">Description</h2>
+  <div class="columns">
+    <div class="column box">
+      <h3 class="label">Current description</h3>
+      <p class="has-text-centered is-size-3">
+        <b id="p_description">Not set yet</b>
+      </p>
+    </div>
+    <div class="column box">
     <div id="description_field" class="field">
       <label class="label">Enter description</label>
       <div class="control">
@@ -235,7 +253,13 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
       <p class="help">The description can be a single word, multiple words, an entire sentence, a quote,
         a extract of a song, etc. It should not be too simple (e.g. "A shell on the beach") nor too hard</p>
     </div>
+    </div>
+  </div>
+</div>
 
+  <!-- hand -->
+  <div class="container">
+    <h2 class="title is-3">Your hand</h2>
     <div class="container">
       <div id="hand" class="columns">
         <div class="column card gamecard" data-card-id="placeholder">
