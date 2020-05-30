@@ -65,6 +65,7 @@
         if (msg.action_needed) {
           status_notif.addClass('is-warning').removeClass('is-info');
           status_notif.append('<br><b>It\'s your turn.</b>').show();
+          // $('#audio_bell')[0].play();  // play bell sound
         } else {
           status_notif.addClass('is-info').removeClass('is-warning');
         }
@@ -125,12 +126,12 @@
       var points_level = $('#points_level');
       function updatePoints(value, index, array) {
         points_level.append(
-          '<div class="level-item has-text-centered">' +
-          '  <div>' +
-          '    <p class="heading">'+$('<p/>').text(value.username).html()+'</p>' +
-          '    <p class="title">'  +$('<p/>').text(value.points).html()+'</p>' +
-          '  </div>' +
-          '</div>'
+                '<div class="level-item has-text-centered">' +
+                '  <div>' +
+                '    <p class="heading">'+$('<p/>').text(value.username).html()+'</p>' +
+                '    <p class="title">'  +$('<p/>').text(value.points).html()+'</p>' +
+                '  </div>' +
+                '</div>'
         );
         if (value.highlight) {
           points_level.children().last().addClass('has-text-primary has-background-grey-lighter');
@@ -237,64 +238,62 @@
   <!-- hand -->
   <div class="container">
     <h2 class="title is-3">Your hand</h2>
-  </div>
+    <div id="description_field" class="field">
+      <label class="label">Enter description</label>
+      <div class="control">
+        <input id="description_input" class="input is-primary is-rounded" type="text" placeholder="The description of the chosen card" disabled>
+      </div>
+      <p class="help">The description can be a single word, multiple words, an entire sentence, a quote,
+        a extract of a song, etc. It should not be too simple (e.g. "A shell on the beach") nor too hard</p>
+    </div>
 
-  <div id="description_field" class="field">
-  <label class="label">Enter description</label>
-  <div class="control">
-    <input id="description_input" class="input is-primary is-rounded" type="text" placeholder="The description of the chosen card" disabled>
-  </div>
-  <p class="help">The description can be a single word, multiple words, an entire sentence, a quote,
-    a extract of a song, etc. It should not be too simple (e.g. "A shell on the beach") nor too hard</p>
-  </div>
-
-  <div class="container">
-    <div id="hand" class="columns">
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 2">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 3">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 4">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 5">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 6">
+    <div class="container">
+      <div id="hand" class="columns">
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 1">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 2">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 3">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 4">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 5">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 6">
+        </div>
       </div>
     </div>
   </div>
 
-    <!-- table -->
+  <!-- table -->
   <div class="container">
     <h2 class="title is-3">Table</h2>
-  </div>
-
-  <div class="container">
-    <div id="table" class="columns">
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 2">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 3">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 4">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 5">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 6">
+    <div class="container">
+      <div id="table" class="columns">
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 1">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 2">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 3">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 4">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 5">
+        </div>
+        <div class="column card gamecard" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card 6">
+        </div>
       </div>
     </div>
   </div>
@@ -302,158 +301,159 @@
   <!-- current points -->
   <div class="container">
     <h2 class="title is-3">Points</h2>
+    <nav id="points_level" class="level">
+    </nav>
   </div>
-  <nav id="points_level" class="level">
-  </nav>
 
   <!-- result last turn -->
   <div class="container">
     <h2 class="title is-3">Last turn</h2>
-  </div>
 
     <div class="container">
-    <div id="last_turn" class="columns">
-      <!-- first card-->
-      <div class="column card">
-        <div class="card-image">
-          <figure class="image is-2by3 gamecard">
-            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
-          </figure>
-        </div>
-        <div class="card-content">
-          <div class="content">
-            <p class="title card-owner"></p>
-            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+      <div id="last_turn" class="columns">
+        <!-- first card-->
+        <div class="column card">
+          <div class="card-image">
+            <figure class="image is-2by3 gamecard">
+              <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+            </figure>
           </div>
-          <div class="media">
-            <div class="media-left">
-              <p>Voters:</p>
+          <div class="card-content">
+            <div class="content">
+              <p class="title card-owner"></p>
+              <p class="subtitle is-6"><b class="card-points">0</b> points</p>
             </div>
-            <div class="media-content">
-              <ul class="list-voters">
-              </ul>
+            <div class="media">
+              <div class="media-left">
+                <p>Voters:</p>
+              </div>
+              <div class="media-content">
+                <ul class="list-voters">
+                </ul>
+              </div>
             </div>
           </div>
         </div>
+        <!-- another card -->
+        <div class="column card">
+          <div class="card-image">
+            <figure class="image is-2by3 gamecard">
+              <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="content">
+              <p class="title card-owner"></p>
+              <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+            </div>
+            <div class="media">
+              <div class="media-left">
+                <p>Voters:</p>
+              </div>
+              <div class="media-content">
+                <ul class="list-voters">
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- another card -->
+        <div class="column card">
+          <div class="card-image">
+            <figure class="image is-2by3 gamecard">
+              <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="content">
+              <p class="title card-owner"></p>
+              <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+            </div>
+            <div class="media">
+              <div class="media-left">
+                <p>Voters:</p>
+              </div>
+              <div class="media-content">
+                <ul class="list-voters">
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- another card -->
+        <div class="column card">
+          <div class="card-image">
+            <figure class="image is-2by3 gamecard">
+              <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="content">
+              <p class="title card-owner"></p>
+              <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+            </div>
+            <div class="media">
+              <div class="media-left">
+                <p>Voters:</p>
+              </div>
+              <div class="media-content">
+                <ul class="list-voters">
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- another card -->
+        <div class="column card">
+          <div class="card-image">
+            <figure class="image is-2by3 gamecard">
+              <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="content">
+              <p class="title card-owner"></p>
+              <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+            </div>
+            <div class="media">
+              <div class="media-left">
+                <p>Voters:</p>
+              </div>
+              <div class="media-content">
+                <ul class="list-voters">
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- another card -->
+        <div class="column card">
+          <div class="card-image">
+            <figure class="image is-2by3 gamecard">
+              <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="content">
+              <p class="title card-owner"></p>
+              <p class="subtitle is-6"><b class="card-points">0</b> points</p>
+            </div>
+            <div class="media">
+              <div class="media-left">
+                <p>Voters:</p>
+              </div>
+              <div class="media-content">
+                <ul class="list-voters">
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- another card -->
       </div>
-      <!-- another card -->
-      <div class="column card">
-        <div class="card-image">
-          <figure class="image is-2by3 gamecard">
-            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
-          </figure>
-        </div>
-        <div class="card-content">
-          <div class="content">
-            <p class="title card-owner"></p>
-            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
-          </div>
-          <div class="media">
-            <div class="media-left">
-              <p>Voters:</p>
-            </div>
-            <div class="media-content">
-              <ul class="list-voters">
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- another card -->
-      <div class="column card">
-        <div class="card-image">
-          <figure class="image is-2by3 gamecard">
-            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
-          </figure>
-        </div>
-        <div class="card-content">
-          <div class="content">
-            <p class="title card-owner"></p>
-            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
-          </div>
-          <div class="media">
-            <div class="media-left">
-              <p>Voters:</p>
-            </div>
-            <div class="media-content">
-              <ul class="list-voters">
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- another card -->
-      <div class="column card">
-        <div class="card-image">
-          <figure class="image is-2by3 gamecard">
-            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
-          </figure>
-        </div>
-        <div class="card-content">
-          <div class="content">
-            <p class="title card-owner"></p>
-            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
-          </div>
-          <div class="media">
-            <div class="media-left">
-              <p>Voters:</p>
-            </div>
-            <div class="media-content">
-              <ul class="list-voters">
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- another card -->
-      <div class="column card">
-        <div class="card-image">
-          <figure class="image is-2by3 gamecard">
-            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
-          </figure>
-        </div>
-        <div class="card-content">
-          <div class="content">
-            <p class="title card-owner"></p>
-            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
-          </div>
-          <div class="media">
-            <div class="media-left">
-              <p>Voters:</p>
-            </div>
-            <div class="media-content">
-              <ul class="list-voters">
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- another card -->
-      <div class="column card">
-        <div class="card-image">
-          <figure class="image is-2by3 gamecard">
-            <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
-          </figure>
-        </div>
-        <div class="card-content">
-          <div class="content">
-            <p class="title card-owner"></p>
-            <p class="subtitle is-6"><b class="card-points">0</b> points</p>
-          </div>
-          <div class="media">
-            <div class="media-left">
-              <p>Voters:</p>
-            </div>
-            <div class="media-content">
-              <ul class="list-voters">
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- another card -->
     </div>
   </div>
+
 
   <!-- current pile -->
   <div class="container">
@@ -462,5 +462,11 @@
   </div>
 
 </section>
+<!--
+<audio id="audio_bell">
+  <source src="/static/audio/bell.ogg" type="audio/ogg">
+  <source src="/static/audio/bell.mp3" type="audio/mpeg">
+</audio>
+-->
 </body>
 </html>
