@@ -8,7 +8,7 @@ from faker import Faker
 from faker.config import AVAILABLE_LOCALES as FAKER_LOCALES
 from random import sample
 from datetime import datetime, timedelta
-from game import DixioGame
+from game import DixioGame, GameException
 
 # REPLACE SECRET KEY AND SET DEBUG TO False BEFORE DEPLOYMENT
 SECRET_KEY = "REPLACE_ME"
@@ -23,7 +23,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app, async_mode=async_mode)
 
 
-class MaxNumberGamesError(Exception):
+class MaxNumberGamesError(GameException):
     pass
 
 
@@ -44,6 +44,7 @@ def game_route(game_name):
 
 @socketio.on_error(namespace='/play')
 def play_error_handler(e):
+    # TODO: send to client only GameException subclass exceptions. Else call logger
     app.logger.error('Error: {0}'.format(e))
     emit('notification_error', {'message': 'Error: {0}'.format(e)})
     if DEBUG:

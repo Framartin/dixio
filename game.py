@@ -6,19 +6,31 @@ from datetime import datetime
 NB_CARDS = 84
 
 
-class GameEndedError(Exception):
+class GameException(Exception):
     pass
 
 
-class NumberPlayersError(ValueError):
+class PlayerError(GameException):
     pass
 
 
-class ActionImpossibleNow(Exception):
+class CardError(GameException):
     pass
 
 
-class NotReadyToVoteError(ActionImpossibleNow):
+class GameEndedError(GameException):
+    pass
+
+
+class NumberPlayersError(GameException):
+    pass
+
+
+class ActionImpossibleNow(GameException):
+    pass
+
+
+class DescriptionError(GameException):
     pass
 
 
@@ -36,10 +48,10 @@ class DixioGame:
 
     def _sanity_check(self, id_player, id_card=None):
         if id_player not in self.ids_players:
-            raise ValueError('Player not in game')
+            raise PlayerError('Player not in game')
         if id_card is not None:
             if id_card not in self.hands[id_player]:
-                raise ValueError("Card not in player's hand")
+                raise CardError("Card not in player's hand")
 
     def _distribute(self):
         """
@@ -145,9 +157,9 @@ class DixioGame:
         if self.status != 'tell':
             raise ActionImpossibleNow("Impossible to tell at this stage")
         if id_player != self.current_turn['id_player_storyteller']:
-            raise ValueError("Only the storyteller can vote")
+            raise PlayerError("Only the storyteller can vote")
         if len(description) <= 2:
-            raise ValueError("Description should not be empty")
+            raise DescriptionError("Description should not be empty")
         self.hands[id_player].remove(id_card)
         # self.current_turn['id_player_storyteller'] = id_player
         self.current_turn['description'] = description
@@ -165,7 +177,7 @@ class DixioGame:
         if self.status != 'play':
             raise ActionImpossibleNow("Impossible to play a card at this stage")
         if id_player == self.current_turn['id_player_storyteller']:
-            raise ValueError("The storyteller cannot play")
+            raise PlayerError("The storyteller cannot play")
         self.hands[id_player].remove(id_card)
         self.current_turn['table'][id_player] = id_card
         if len(self.current_turn['table']) == len(self.ids_players):
@@ -191,11 +203,11 @@ class DixioGame:
         if self.status != 'vote':
             raise ActionImpossibleNow("Impossible to vote at this stage")
         if id_player == self.current_turn['id_player_storyteller']:
-            raise ValueError("The storyteller cannot vote")
+            raise PlayerError("The storyteller cannot vote")
         if id_card == self.current_turn["table"][id_player]:
-            raise ValueError("You cannot vote for your own card")
+            raise CardError("You cannot vote for your own card")
         if id_card not in self.current_turn['table'].values():
-            raise ValueError("Card not in table")
+            raise CardError("Card not in table")
         self.current_turn['votes'][id_player] = id_card
         if len(self.current_turn['votes']) == len(self.ids_players) - 1:
             self._update_points_with_current_turn()
