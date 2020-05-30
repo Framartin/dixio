@@ -29,7 +29,9 @@ class MaxNumberGamesError(GameException):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    lang = request.accept_languages.best_match(FAKER_LOCALES)
+    random_game_name = Faker(lang).sentence(nb_words=5).replace(' ', '_').replace('.', '').lower()
+    return render_template('index.html', random_game_name=random_game_name)
 
 
 @app.route('/game/<game_name>')

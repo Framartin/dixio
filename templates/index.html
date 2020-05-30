@@ -4,7 +4,7 @@
   {{ super() }}
   <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
-      $('#input_game_name').val('TODO');
+      $('#input_game_name').val({{ random_game_name|tojson }});
     });
   </script>
 {% endblock %}
@@ -22,7 +22,7 @@ Virtual board game between friends!
           {{url_for('index', _external=True)|replace("http://", "")|replace("https://", "")}}game/
         </a>
       </p>
-      <p class="control">
+      <p class="control is-expanded">
         <input id="input_game_name" class="input is-primary" type="text" placeholder="Game name" pattern="^[^?&:&quot;'%#]+$" title="Game name should not contain any of these characters: ?, &, :, ', &quot;, %, #.">
       </p>
       <div class="control">
@@ -31,7 +31,15 @@ Virtual board game between friends!
     </div>
     <p class="help">Simply enter a name for the game, click the "create game" button, and share the link to your friends!</p>
   </div>
+</div>
 
+<div class="container">
+  <div class="message is-danger">
+    <div class="message-body">
+      By creating a game, you certify that you possess a physical copy of the game Dixit. <br>
+      This service was created to offer Dixit owners a way to play during the lockdown of the Covid-19 crisis. It is not intended to distribute new digital copies of the game.
+    </div>
+  </div>
 </div>
 
 {% endblock %}
