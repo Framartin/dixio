@@ -5,6 +5,11 @@
   <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
       $('#input_game_name').val({{ random_game_name|tojson }});
+      // redirect to game URL on click
+      $('#button_create_game').click(function() {
+        window.location.href = '/game/' + $('#input_game_name').val();
+        return false;
+      });
     });
   </script>
 {% endblock %}
@@ -26,7 +31,7 @@ Virtual board game between friends!
         <input id="input_game_name" class="input is-primary" type="text" placeholder="Game name" pattern="^[^?&:&quot;'%#]+$" title="Game name should not contain any of these characters: ?, &, :, ', &quot;, %, #.">
       </p>
       <div class="control">
-        <button type="submit" class="button is-primary">Create game</button>
+        <button id="button_create_game" type="submit" class="button is-primary">Create game</button>
       </div>
     </div>
     <p class="help">Simply enter a name for the game, click the "create game" button, and share the link to your friends!</p>
