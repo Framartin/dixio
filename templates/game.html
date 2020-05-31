@@ -82,7 +82,11 @@
         description_input.prop("disabled", true);
       }
       // update current description
-      $('#p_description').text(msg.description);
+      if (msg.description) {
+        $('#p_description').text(msg.description);
+      } else {
+        $('#p_description').text("…");
+      }
       // update number of cards remaining
       $('#b_nb_cards_pile').text(msg.nb_cards_pile);
       // if the page was (re)loaded, update everything and do nothing more
@@ -236,7 +240,7 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
 <!-- description display -->
 <div class="container">
   <h2 class="title is-3">Description</h2>
-  <div class="columns">
+  <div class="columns is-vcentered">
     <div class="column box">
       <h3 class="label">Current description</h3>
       <p class="has-text-centered is-size-3">
