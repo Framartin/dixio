@@ -77,34 +77,34 @@ class DixioGame:
         # wait for the storyteller to provide card & description
         elif status == 'tell':
             if id_player == self.current_turn['id_player_storyteller']:
-                message = 'Choose 1 card in your hand and enter a short description. The description can be a single ' \
-                          'word, multiple words, an entire sentence, a quote, a extract of a song, etc. It should not ' \
-                          'be too simple (e.g. "A shell on the beach") nor too hard.'
+                message = 'Enter a short description corresponding to one card in your hand. Then click this card ' \
+                          'to validate your play.'
                 action_needed = True
             else:
                 message = 'Wait for the storyteller to choose a card and its description.'
         # wait for other players to play a card
         elif status == 'play':
+            nb_missing_cards = len(self.ids_players) - len(self.current_turn['table'])
             if id_player == self.current_turn['id_player_storyteller']:
-                message = 'Wait for other players to to choose a card corresponding to your description.'
+                message = f'Wait for other players to to choose a card corresponding to your description ' \
+                          f'({nb_missing_cards} missing).'
             else:
                 if id_player not in self.current_turn['table']:
-                    message = 'Choose a card among your hand that correspond best with the storyteller\'s description.'
+                    message = 'Choose a card among your hand that best corresponds to the storyteller\'s description.'
                     action_needed = True
                 else:
-                    nb_missing_cards = len(self.ids_players) - len(self.current_turn['table'])
-                    message = 'Wait for other players to play a card ({0} missing).'.format(nb_missing_cards)
+                    message = f'Wait for other players to play a card ({nb_missing_cards} missing).'
         # wait for other players to vote
         elif status == 'vote':
+            nb_missing_cards = len(self.ids_players) - len(self.current_turn['votes']) - 1
             if id_player == self.current_turn['id_player_storyteller']:
-                message = 'Wait for other players to vote for a card on the table.'
+                message = f'Wait for other players to vote for a card on the table ({nb_missing_cards} missing).'
             else:
                 if id_player not in self.current_turn['votes']:
                     message = 'Vote for 1 card on the table that you think is the one of the storyteller.'
                     action_needed = True
                 else:
-                    nb_missing_cards = len(self.ids_players) - len(self.current_turn['votes']) - 1
-                    message = 'Wait for other players to vote ({0} missing).'.format(nb_missing_cards)
+                    message = f'Wait for other players to vote ({nb_missing_cards} missing).'
         # give some time for players to see results of this turn, before starting a new one
         elif status == 'end_turn':
             message = 'See the results of this turn. Next turn incoming.'
