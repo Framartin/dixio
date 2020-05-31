@@ -72,7 +72,8 @@ class DixioGame:
             description = self.current_turn['description']
         # not all players have joined
         if status == 'lobby':
-            message = 'You\'re in the game. Wait for other players and start the game if everyone is ready'
+            message = f'You\'re in the game. Wait for other players and start the game when everyone is ready.<br>'\
+                      f'{len(self.ids_players)} player(s) currently in game.'
         # wait for the storyteller to provide card & description
         elif status == 'tell':
             if id_player == self.current_turn['id_player_storyteller']:

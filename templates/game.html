@@ -55,7 +55,7 @@
       // color in yellow if action is needed from the player
       var status_notif = $('#notification_status');
       var button_turn_indicator = $('#button_turn_indicator');
-      status_notif.find('p').eq(0).text(msg.message);
+      status_notif.find('p').eq(0).html(msg.message); // status notification message is assumed to be safe
       if (msg.action_needed) {
         status_notif.addClass('is-warning').removeClass('is-info');
         status_notif.find('p').eq(0).append('<br><b>It\'s your turn.</b>').show();

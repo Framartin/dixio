@@ -81,7 +81,7 @@ class PlayNamespace(Namespace):
         join_room(message['room'])
         # send status
         status_dict = game.get_status_dict(session.get('id_player'), on_join=True)
-        emit('status', status_dict)
+        emit('status', status_dict, room=message['room'])
 
     def on_get_status(self, message):
         game = self.games.get(message['room'])
