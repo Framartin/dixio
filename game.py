@@ -272,12 +272,7 @@ class DixioGame:
     def get_last_turn(self):
         if len(self.past_turns) < 1:
             return None
-        last_turn = self.past_turns[-1]
-        return {
-            'points': last_turn['points'],
-            'table': last_turn['table'],
-            'votes': last_turn['votes'],
-        }
+        return self.past_turns[-1]
 
     @property
     def points(self):

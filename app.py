@@ -142,7 +142,7 @@ class PlayNamespace(Namespace):
             return
         id_player = session.get('id_player')
         last_turn = []
-        for k, v in last_turn_dict['table'].items():  # TODO
+        for k, v in last_turn_dict['table'].items():
             # k: id_player, v: id_card
             last_turn.append({
                 'username': self.id_player2username[k],
@@ -150,7 +150,7 @@ class PlayNamespace(Namespace):
                 'points': last_turn_dict['points'][k],
                 'usernames_voters': [self.id_player2username[k2] for k2, v2 in last_turn_dict['votes'].items() if
                                      v2 == v],
-                'highlight': k == id_player,  # highlight if current player
+                'highlight': k == last_turn_dict['id_player_storyteller'],  # highlight correct card
             })
         emit('last_turn', {'last_turn': last_turn})
 
