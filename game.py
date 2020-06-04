@@ -179,6 +179,8 @@ class DixioGame:
             raise ActionImpossibleNow("Impossible to play a card at this stage")
         if id_player == self.current_turn['id_player_storyteller']:
             raise PlayerError("The storyteller cannot play")
+        if id_player in self.current_turn['table']:
+            raise PlayerError("You have already played a card")
         self.hands[id_player].remove(id_card)
         self.current_turn['table'][id_player] = id_card
         if len(self.current_turn['table']) == len(self.ids_players):
