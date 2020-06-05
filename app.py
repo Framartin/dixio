@@ -166,6 +166,7 @@ class PlayNamespace(Namespace):
                 'points': v,
                 'highlight': k == id_player,  # highlight if current player
             })
+        table_points.sort(key=lambda val: val['points'], reverse=True)
         emit('points', {'points': table_points})
 
     # def on_leave(self, message):
