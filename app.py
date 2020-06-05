@@ -150,7 +150,7 @@ class PlayNamespace(Namespace):
                 'points': last_turn_dict['points'][k],
                 'usernames_voters': [self.id_player2username[k2] for k2, v2 in last_turn_dict['votes'].items() if
                                      v2 == v],
-                'highlight': k == last_turn_dict['id_player_storyteller'],  # highlight correct card
+                'correct_card': k == last_turn_dict['id_player_storyteller'],  # highlight correct card
             })
         emit('last_turn', {'last_turn': last_turn})
 

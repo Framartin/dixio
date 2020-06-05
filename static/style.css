@@ -6,11 +6,23 @@
 }
 */
 .gamecard img {
-  border-radius: 18px 18px 18px 18px;
+  border-radius: 20px;
+}
+.gamecard {
+  border-radius: 20px;
 }
 
 .gamecard img:hover {
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.gamecard.correct {
+  box-shadow: 0px 0px 15px 10px gold;
+  z-index: 1;
+}
+
+.voters-star {
+  display:none; /* not visible by default */
 }
 
 /*
