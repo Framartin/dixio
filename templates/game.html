@@ -107,23 +107,23 @@
 
     // replace images in hand
     function updateHand(value, index, array) {
-      $('#hand').children().eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
-      $('#hand').children().eq(index).data('card-id', value);
+      $('#hand').find('.gamecard').eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
+      $('#hand').find('.gamecard').eq(index).data('card-id', value);
     }
     socket.on('hand', function(msg) {
       $('#hand').find('img').attr('src', '/static/img/placeholder.png'); // when play a card, the hand has 1 card less, so we replace all by placeholder before updating them
-      $('#hand').find('img').data('card-id', 'placeholder');
+      $('#hand').find('.gamecard').data('card-id', 'placeholder');
       msg.ids_cards.forEach(updateHand);
     });
 
     // replace image in table
     function updateTable(value, index, array) {
-      $('#table').children().eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
-      $('#table').children().eq(index).data('card-id', value);
+      $('#table').find('.gamecard').eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
+      $('#table').find('.gamecard').eq(index).data('card-id', value);
     }
     socket.on('table', function(msg) {
       $('#table').find('img').attr('src', '/static/img/placeholder.png');
-      $('#table').find('img').data('card-id', 'placeholder');
+      $('#table').find('.gamecard').data('card-id', 'placeholder');
       msg.ids_cards.forEach(updateTable);
     });
 
@@ -173,7 +173,7 @@
     });
 
     // handle tell and play from hand
-    $('#hand').on('click','.card', function(){
+    $('#hand').on('click','.gamecard', function(){
       var id_card = $(this).data('card-id');
       if (id_card === 'placeholder'){
         return false;
@@ -188,7 +188,7 @@
       }
     });
     // handle vote from table
-    $('#table').on('click','.card', function(){
+    $('#table').on('click','.gamecard', function(){
       var id_card = $(this).data('card-id');
       if (id_card === 'placeholder'){
         return false;
