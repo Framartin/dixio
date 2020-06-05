@@ -59,11 +59,14 @@
       if (msg.action_needed) {
         status_notif.addClass('is-warning').removeClass('is-info');
         status_notif.find('p').eq(0).append('<br><b>It\'s your turn.</b>').show();
-        button_turn_indicator.addClass('is-warning is-loading').removeClass('is-info');
+        button_turn_indicator.addClass('is-warning').removeClass('is-info');
+        button_turn_indicator.find('.fa-check').addClass('fa-gamepad').removeClass('fa-check');
+        // others FA icons possible: exclamation edit pen arrow-down arrow-alt-circle-down angle-double-down gamepad play layer-group scroll clone address-card
         $('#audio_bell')[0].play();  // play bell sound
       } else {
         status_notif.addClass('is-info').removeClass('is-warning');
-        button_turn_indicator.addClass('is-info').removeClass('is-warning is-loading');
+        button_turn_indicator.addClass('is-info').removeClass('is-warning');
+        button_turn_indicator.find('.fa-gamepad').addClass('fa-check').removeClass('fa-gamepad');
       }
       // do nothing more if the game haven't started
       if (msg.status === 'lobby') {
@@ -219,7 +222,7 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
             <form id="button_start" method="POST" action='#'>
               <input type="submit" class="button is-primary" value="Start Game">
             </form>
-            <button id="button_turn_indicator" class="button is-hovered is-loading">
+            <button id="button_turn_indicator" class="button is-hovered">
             <span class="icon is-small">
               <i class="fas fa-check"></i>
             </span>
