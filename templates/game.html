@@ -323,7 +323,8 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
     <div id="last_turn" class="columns">
       {% for i in range(6) %}
       <!-- card-->
-      <div class="column card is-2">
+      <div class="column is-2">
+        <div class="card">
         <div class="card-image">
           <figure class="image is-2by3 gamecard">
             <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
@@ -348,6 +349,7 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
               </ul>
             </div>
           </div>
+        </div>
         </div>
       </div>
       {% endfor %}
