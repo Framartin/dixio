@@ -114,6 +114,8 @@
       $('#hand').find('img').attr('src', '/static/img/placeholder.png'); // when play a card, the hand has 1 card less, so we replace all by placeholder before updating them
       $('#hand').find('.gamecard').data('card-id', 'placeholder');
       msg.ids_cards.forEach(updateHand);
+      $('#hand').children().css('visibility', 'visible');
+      $('#hand').children().slice(msg.ids_cards.length).css('visibility', 'hidden');
     });
 
     // replace image in table
@@ -125,6 +127,8 @@
       $('#table').find('img').attr('src', '/static/img/placeholder.png');
       $('#table').find('.gamecard').data('card-id', 'placeholder');
       msg.ids_cards.forEach(updateTable);
+      $('#table').children().css('visibility', 'visible');
+      $('#table').children().slice(msg.ids_cards.length).css('visibility', 'hidden');
     });
 
     // display points
@@ -170,6 +174,8 @@
     }
     socket.on('last_turn', function(msg) {
       msg.last_turn.forEach(updateCardLastTurn);
+      last_turn_div.children().css('visibility', 'visible');
+      last_turn_div.children().slice(msg.last_turn.length).css('visibility', 'hidden');
     });
 
     // handle tell and play from hand
