@@ -8,12 +8,14 @@
 .gamecard img {
   border-radius: 20px;
 }
+
 .gamecard {
   border-radius: 20px;
+  box-shadow: 0 .5em 1em -.125em rgba(10,10,10,.1),0 0 0 1px rgba(10,10,10,.02);
 }
 
-.gamecard img:hover {
-  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+.gamecard:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.4);
 }
 
 .gamecard.correct {

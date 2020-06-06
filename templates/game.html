@@ -280,25 +280,14 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
 <div class="container">
   <h2 class="title is-3">Your hand</h2>
   <div class="container">
-    <div id="hand" class="columns">
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+    <div id="hand" class="columns is-variable is-1">
+      {% for i in range(6) %}
+      <div class="column is-2">
+        <div class="gamecard has-text-centered" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card {{ i }}">
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 2">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 3">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 4">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 5">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 6">
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -307,25 +296,14 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
 <div class="container">
   <h2 class="title is-3">Table</h2>
   <div class="container">
-    <div id="table" class="columns">
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 1">
+    <div id="table" class="columns is-variable is-1">
+      {% for i in range(6) %}
+      <div class="column is-2">
+        <div class="gamecard has-text-centered" data-card-id="placeholder">
+          <img src="/static/img/placeholder.png" alt="Card {{ i }}">
+        </div>
       </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 2">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 3">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 4">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 5">
-      </div>
-      <div class="column card gamecard" data-card-id="placeholder">
-        <img src="/static/img/placeholder.png" alt="Card 6">
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -345,7 +323,7 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
     <div id="last_turn" class="columns">
       {% for i in range(6) %}
       <!-- card-->
-      <div class="column card">
+      <div class="column card is-2">
         <div class="card-image">
           <figure class="image is-2by3 gamecard">
             <img src="/static/img/placeholder.png" alt="Card 1 of last turn">
