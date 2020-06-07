@@ -184,12 +184,11 @@
       if (id_card === 'placeholder'){
         return false;
       }
-      var description = $('#description_input').val();
-      var description_disabled = $('#description_input').prop('disabled');
-      // check if input is read only to know if the storyteller is telling or if an other player is playing a card
-      if (description_disabled === true) {
+      // status is defined in the first status update
+      if (status === 'play') {
         socket.emit('play', {room: game_name, id_card: id_card});
-      } else {
+      } else if (status === 'tell') {
+        var description = $('#description_input').val();
         socket.emit('tell', {room: game_name, id_card: id_card, description: description});
       }
     });
