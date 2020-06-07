@@ -51,6 +51,8 @@
     });
     // receive current status of game and update elements
     socket.on('status', function(msg) {
+      var previous_status = status || null; // save previous status (status global var)
+      status = msg.status; // update current status
       // update the text of the status
       // color in yellow if action is needed from the player
       var status_notif = $('#notification_status');
@@ -62,7 +64,9 @@
         button_turn_indicator.addClass('is-warning').removeClass('is-info');
         button_turn_indicator.find('.fa-check').addClass('fa-gamepad').removeClass('fa-check');
         // others FA icons possible: exclamation edit pen arrow-down arrow-alt-circle-down angle-double-down gamepad play layer-group scroll clone address-card
-        $('#audio_bell')[0].play();  // play bell sound
+        if (status !== previous_status) {
+          $('#audio_bell')[0].play();  // play bell sound only at status change
+        }
       } else {
         status_notif.addClass('is-info').removeClass('is-warning');
         button_turn_indicator.addClass('is-info').removeClass('is-warning');
