@@ -11,11 +11,21 @@
 
 .gamecard {
   border-radius: 20px;
+  background: #ffffff;
   box-shadow: 0 .5em 1em -.125em rgba(10,10,10,.1),0 0 0 1px rgba(10,10,10,.02);
+  transition: transform .2s;
 }
 
 .gamecard:hover {
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.4);
+}
+
+/* zoom for tablet and above */
+@media only screen and (min-width: 769px) {
+  .gamecard:hover {
+    transform: scale(1.5);
+    z-index: 2;
+  }
 }
 
 .gamecard.correct {
