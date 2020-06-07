@@ -129,6 +129,16 @@ class DixioGame:
         if id_player not in self.ids_players:
             self.ids_players.append(id_player)
 
+    def remove_player(self, id_player):
+        """
+        Remove player from the game.
+        Cannot be performed after game start (which allows page reloads).
+        """
+        if self.status != 'lobby':
+            raise ActionImpossibleNow('Player cannot be removed. The game has already started.')
+        if id_player in self.ids_players:
+            self.ids_players.remove(id_player)
+
     def start_game(self):
         if self.status != 'lobby':
             raise ActionImpossibleNow('The game has already started.')
