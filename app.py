@@ -46,10 +46,11 @@ def game_route(game_name):
 
 @socketio.on_error(namespace='/play')
 def play_error_handler(e):
-    # TODO: send to client only GameException subclass exceptions. Else call logger
-    app.logger.error('Error: {0}'.format(e))
-    emit('notification_error', {'message': 'Error: {0}'.format(e)})
-    if DEBUG:
+    # send to client only GameException subclass exceptions. Else call logger
+    if isinstance(e, GameException):
+        emit('notification_error', {'message': f'{e}'})
+    else:
+        app.logger.error(f'{e}')
         raise e
 
 
