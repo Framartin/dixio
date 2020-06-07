@@ -4,22 +4,16 @@
 {{ super() }}
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function() {
-    // Use a "/test" namespace.
-    // An application can open a connection on multiple namespaces, and
-    // Socket.IO will multiplex all those connections on a single
-    // physical channel. If you don't care about multiple channels, you
-    // can set the namespace to an empty string.
+    // Socket.IO namespace
     namespace = '/play';
+    // Socket.IO room for all players
     game_name = '{{ game_name }}';
 
     // Connect to the Socket.IO server.
-    // The connection URL has the following format, relative to the current page:
-    //     http[s]://<domain>:<port>[/<namespace>]
     var socket = io(namespace);
 
     // Event handler for new connections.
-    // The callback function is invoked when a connection with the
-    // server is established.
+    // Join room at connect
     socket.on('connect', function() {
       socket.emit('join', {room: game_name});
     });
@@ -33,7 +27,7 @@
               $('<div/>').text(msg.message).html() +
               '</div>');
     });
-    // server ask to update status or hand or last turn
+    // server ask to update status, hand, last turn, or points
     socket.on('update_status', function() {
       socket.emit('get_status', {room: game_name});
     });
@@ -49,11 +43,11 @@
     socket.on('update_points', function() {
       socket.emit('get_points', {room: game_name});
     });
-    // receive current status of game and update elements
+    // Event handler for current game status to update its elements
     socket.on('status', function(msg) {
       var previous_status = status || null; // save previous status (status global var)
       status = msg.status; // update current status
-      // update the text of the status
+      // update the text and the button of the status
       // color in yellow if action is needed from the player
       var status_notif = $('#notification_status');
       var button_turn_indicator = $('#button_turn_indicator');
@@ -72,7 +66,7 @@
         button_turn_indicator.addClass('is-info').removeClass('is-warning');
         button_turn_indicator.find('.fa-gamepad').addClass('fa-check').removeClass('fa-gamepad');
       }
-      // do nothing more if the game haven't started
+      // do nothing more if the game hasn't started
       if (msg.status === 'lobby') {
         button_turn_indicator.hide();
         return false;
@@ -109,7 +103,7 @@
       }
     });
 
-    // replace images in hand
+    // update images and data in hand
     function updateHand(value, index, array) {
       $('#hand').find('.gamecard').eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
       $('#hand').find('.gamecard').eq(index).data('card-id', value);
@@ -118,11 +112,12 @@
       $('#hand').find('img').attr('src', '/static/img/placeholder.png'); // when play a card, the hand has 1 card less, so we replace all by placeholder before updating them
       $('#hand').find('.gamecard').data('card-id', 'placeholder');
       msg.ids_cards.forEach(updateHand);
+      // hide unused div (keeping the space)
       $('#hand').children().css('visibility', 'visible');
       $('#hand').children().slice(msg.ids_cards.length).css('visibility', 'hidden');
     });
 
-    // replace image in table
+    // update images and data in table
     function updateTable(value, index, array) {
       $('#table').find('.gamecard').eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
       $('#table').find('.gamecard').eq(index).data('card-id', value);
@@ -131,6 +126,7 @@
       $('#table').find('img').attr('src', '/static/img/placeholder.png');
       $('#table').find('.gamecard').data('card-id', 'placeholder');
       msg.ids_cards.forEach(updateTable);
+      // hide unused div (keeping the space)
       $('#table').children().css('visibility', 'visible');
       $('#table').children().slice(msg.ids_cards.length).css('visibility', 'hidden');
     });
@@ -206,9 +202,7 @@
       socket.emit('vote', {room: game_name, id_card: id_card});
     });
 
-    // Handlers for the different forms in the page.
-    // These accept data from the user and send it to the server in a
-    // variety of ways
+    // handle start game button
     $('form#button_start').submit(function(event) {
       socket.emit('start_game', {room: game_name});
       return false;
