@@ -47,6 +47,9 @@ class DixioGame:
         self.debug = debug
 
     def _sanity_check(self, id_player, id_card=None):
+        """
+        Check that player is in game and if set that card is in player's hand
+        """
         if id_player not in self.ids_players:
             raise PlayerError('Player not in game')
         if id_card is not None:
@@ -64,6 +67,13 @@ class DixioGame:
             self.hands[id_player].append(id_card)
 
     def get_status_dict(self, id_player, on_join=False):
+        """
+        Return the current state of the game for a player
+        :param id_player: uuid of player requesting status
+        :param on_join: Boolean indication if player just joined (at game start or page reload) passed to the returned
+                        dictionary. Have no other effect.
+        :return: dictionary containing elements of the game to be presented to player
+        """
         self._sanity_check(id_player=id_player)
         action_needed = False
         status = self.status
@@ -122,6 +132,9 @@ class DixioGame:
              }
 
     def add_player(self, id_player):
+        """
+        Add a player to the game
+        """
         if id_player in self.ids_players:
             return
         if self.status != 'lobby':
@@ -131,8 +144,8 @@ class DixioGame:
 
     def remove_player(self, id_player):
         """
-        Remove player from the game.
-        Cannot be performed after game start (which allows page reloads).
+        Remove player from the game
+        Cannot be performed after game start (to allow page reload)
         """
         if self.status != 'lobby':
             raise ActionImpossibleNow('Player cannot be removed. The game has already started.')
@@ -140,6 +153,9 @@ class DixioGame:
             self.ids_players.remove(id_player)
 
     def start_game(self):
+        """
+        Start the game if possible
+        """
         if self.status != 'lobby':
             raise ActionImpossibleNow('The game has already started.')
         # check number of player
@@ -160,10 +176,16 @@ class DixioGame:
         self.status = 'tell'
 
     def get_hand(self, id_player):
+        """
+        Return the hand of a player
+        """
         self._sanity_check(id_player=id_player)
         return self.hands[id_player]
 
     def tell(self, id_player, id_card, description):
+        """
+        The storyteller chooses a card and a description
+        """
         self._sanity_check(id_player=id_player, id_card=id_card)
         if self.status != 'tell':
             raise ActionImpossibleNow("Impossible to tell at this stage")
@@ -180,9 +202,6 @@ class DixioGame:
     def play(self, id_player, id_card):
         """
         Other players choose a card to place on the table
-        :param id_player:
-        :param id_card:
-        :return: True if all players have played
         """
         self._sanity_check(id_player=id_player, id_card=id_card)
         if self.status != 'play':
@@ -208,9 +227,6 @@ class DixioGame:
     def vote(self, id_player, id_card):
         """
         Other players vote for one of the card on the table
-        :param id_player:
-        :param id_card:
-        :return: True if all other players have cast their vote
         """
         self._sanity_check(id_player=id_player)  # do not check that id_card is in hand of player
         if self.status != 'vote':
