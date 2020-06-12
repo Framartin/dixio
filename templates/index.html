@@ -7,7 +7,7 @@
       $('#input_game_name').val({{ random_game_name|tojson }});
       // redirect to game URL on click
       $('#button_create_game').click(function() {
-        window.location.href = '/game/' + $('#input_game_name').val();
+        window.location.href = '/game/' + $("#select_deck_name").val() + '/' + $('#input_game_name').val();
         return false;
       });
     });
@@ -25,6 +25,20 @@ Virtual board game between friends!
       <p class="control">
         <a class="button is-static">
           {{url_for('index', _external=True)|replace("http://", "")|replace("https://", "")}}game/
+        </a>
+      </p>
+      <p class="control">
+        <span class="select">
+          <select id="select_deck_name" name="deck">
+            {% for deck_name in deck_names %}
+            <option value={{ deck_name|tojson }}>{{ deck_name }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </p>
+      <p class="control">
+        <a class="button is-static">
+          /
         </a>
       </p>
       <p class="control is-expanded">
