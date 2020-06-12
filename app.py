@@ -54,15 +54,15 @@ def play_error_handler(e):
 
 
 class PlayNamespace(Namespace):
-    games = {}
-    #id_player2room = {}
+    # A connection from a player to a game (may not be unique): request.sid (room), id_player, username, game_name
+    players_connections = pd.DataFrame(columns=())
     id_player2username = {}
 
     def on_connect(self):
-        #self.id_player2room[session['id_player']] = request.sid  # TODO : do not support multiple room
         self.id_player2username[session['id_player']] = session['username']
 
     def on_join(self, message):
+        app.logger.error('COOOOOOOOOOOOOONECT ' + request.sid)
         # create game if don't exist
         if message['room'] not in self.games:
             # clean old room
@@ -79,6 +79,13 @@ class PlayNamespace(Namespace):
         game = self.games.get(message['room'])
         game.add_player(session['id_player'])
         join_room(message['room'])
+        # add to the conn list
+        self.players_connections.append(PlayerConnection(
+            room=request.sid,
+            id_player=session['id_player'],
+            username=session['username'],
+            game_name=message['room'],
+        ))
         # send status
         status_dict = game.get_status_dict(session.get('id_player'), on_join=True)
         emit('status', status_dict, room=message['room'])
@@ -197,6 +204,7 @@ class PlayNamespace(Namespace):
 
     def on_disconnect(self):
         id_player = session.get('id_player')
+        app.logger.error('DIIIIIISCONECT ' + request.sid)
         # TODO remove player for game if in lobby
         #del self.id_player2room[id_player]
         # del self.id_player2username[id_player]  # TODO: have to keep id_player if reconnect
