@@ -7,7 +7,8 @@
       $('#input_game_name').val({{ random_game_name|tojson }});
       // check prohibited characters in game name
       $("#input_game_name").on("input", function(){
-        if (/[?&:;%#]+/.test($(this).val())) {
+        var game_name = $(this).val();
+        if (/[?&:;%#]+/.test(game_name) || game_name.length < 5) {
           $("#help_game_name").removeClass('is-hidden');
           $("#icon_game_name").removeClass('fa-check').addClass('fa-exclamation-triangle');
           $(this).removeClass('is-success').addClass('is-danger');
