@@ -18,6 +18,18 @@
           $(this).removeClass('is-danger').addClass('is-success');
         }
       });
+      //
+      $('#select_deck_name').change(function(e) {
+        var deck_name = $(this).val();
+        if (deck_name === 'dixit') {
+          $("#message_warning_dixit").removeClass('is-hidden');
+        } else {
+          $("#message_warning_dixit").addClass('is-hidden');
+        }
+        var id_card_random = Math.floor(Math.random() * Math.floor(83) +1); // random int between 1 and 84
+        $("#img_random_card").attr('src', '/static/img/'+deck_name+'/'+id_card_random+'.png');
+        $("#figure_random_card").removeClass('is-hidden');
+      });
       // redirect to game URL on click
       $('#button_create_game').click(function() {
         window.location.href = '/game/' + $("#select_deck_name").val() + '/' + $('#input_game_name').val();
@@ -44,11 +56,10 @@ Virtual board game between friends!
   <h2 class="title is-3">Create a new game</h2>
   <p>Enter the game name, choose a deck of cards, create the game, and share the link to your friends!</p>
   <div class="container">
-    <!-- ------>
     <div class="field">
       <label class="label">Game name</label>
       <div class="control has-icons-left has-icons-right">
-        <input id="input_game_name" class="input" type="text" placeholder="Game name">
+        <input id="input_game_name" class="input is-medium" type="text" placeholder="Game name">
         <span class="icon is-small is-left">
           <i class="fas fa-pen"></i>
         </span>
@@ -56,38 +67,48 @@ Virtual board game between friends!
           <i id="icon_game_name" class="fas fa-check"></i>
         </span>
       </div>
-      <p id="help_game_name" class="help is-danger is-hidden">Game name should not contain any of these characters: ?, &, :, ', &quot;, %, #.</p>
+      <p id="help_game_name" class="help is-danger is-hidden">Game name should be at least 5 characters long and not contain any of these characters: ?, &, :, %, #.</p>
     </div>
 
     <div class="field">
       <label class="label">Deck of cards</label>
-      <div class="control has-icons-left">
-        <div class="select">
-          <select id="select_deck_name" name="deck_name">
-            {% for deck_name in deck_names %}
-            <option value={{ deck_name|tojson }}>{{ deck_name|title }}</option>
-            {% endfor %}
-          </select>
+      <div class="columns">
+        <div class="column">
+          <div class="control has-icons-left">
+            <div class="select is-medium">
+              <select id="select_deck_name" name="deck_name">
+                {% for deck_name in deck_names %}
+                <option value={{ deck_name|tojson }}>{{ deck_name|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <span class="icon is-small is-left">
+              <i class="fas fa-palette"></i>
+            </span>
+          </div>
+          <p class="help">Select a style of cards</p>
+          <div id="message_warning_dixit" class="message is-danger">
+            <div class="message-body">
+              By creating a game with the original set of Dixit cards, you certify that you possess a physical copy of the game Dixit. <br>
+              This service was created to offer Dixit owners a way to play during the lockdown of the Covid-19 crisis. It is not intended to distribute new digital copies of the game.
+            </div>
+          </div>
         </div>
-        <span class="icon is-small is-left">
-          <i class="fas fa-palette"></i>
-        </span>
-      </div>
-    </div>
-
-    <div class="message is-danger">
-      <div class="message-body">
-        By creating a game, you certify that you possess a physical copy of the game Dixit. <br>
-        This service was created to offer Dixit owners a way to play during the lockdown of the Covid-19 crisis. It is not intended to distribute new digital copies of the game.
+        <div class="column is-narrow">
+          <figure id="figure_random_card" class="image is-hidden">
+            <img id="img_random_card" alt="A random card from the selected deck">
+            <figcaption>An example of card</figcaption>
+          </figure>
+        </div>
       </div>
     </div>
 
     <div class="field is-grouped">
       <div class="control">
-        <button id="button_create_game" type="submit" class="button is-primary">Create game</button> <!-- is-link -->
+        <button id="button_create_game" type="submit" class="button is-primary is-medium">Create game</button>
       </div>
       <div class="control">
-        <button id="button_copy_link" class="button is-light is-small">Copy share link</button>
+        <button id="button_copy_link" class="button is-light is-small has-tooltip-arrow has-tooltip-active">Copy share link</button>
       </div>
     </div>
   </div>
