@@ -10,6 +10,16 @@
         window.location.href = '/game/' + $("#select_deck_name").val() + '/' + $('#input_game_name').val();
         return false;
       });
+      $('#button_copy_link').click(function() {
+        var base_url = {{ url_for('index', _external=True)|tojson }};
+        var game_link = encodeURI(base_url + 'game/' + $("#select_deck_name").val() + '/' + $('#input_game_name').val());
+        var dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = game_link;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+      });
     });
   </script>
 {% endblock %}
