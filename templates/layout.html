@@ -34,8 +34,8 @@
     <p>
       {% block footer %}
       <strong>DixIO</strong> by <a href="https://github.com/Framartin/dixio">Framartin</a>. The source code is licensed
-      <a href="https://github.com/Framartin/dixio/blob/master/LICENSE">GPL</a>. The cards, designed by Marie Cardouat,
-      are copyrighted by Libellud, and the original game authored by Jean-Louis Roubira.
+      <a href="https://github.com/Framartin/dixio/blob/master/LICENSE">GPL</a>.
+      {{ config.CARDS_DECKS[deck_name].license|safe if game_name }} The original game was authored by Jean-Louis Roubira.
       {% endblock %}
     </p>
   </div>
