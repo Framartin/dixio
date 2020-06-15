@@ -5,6 +5,18 @@
   <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
       $('#input_game_name').val({{ random_game_name|tojson }});
+      // check prohibited characters in game name
+      $("#input_game_name").on("input", function(){
+        if (/[?&:;%#]+/.test($(this).val())) {
+          $("#help_game_name").removeClass('is-hidden');
+          $("#icon_game_name").removeClass('fa-check').addClass('fa-exclamation-triangle');
+          $(this).removeClass('is-success').addClass('is-danger');
+        } else {
+          $("#help_game_name").addClass('is-hidden');
+          $("#icon_game_name").removeClass('fa-exclamation-triangle').addClass('fa-check');
+          $(this).removeClass('is-danger').addClass('is-success');
+        }
+      });
       // redirect to game URL on click
       $('#button_create_game').click(function() {
         window.location.href = '/game/' + $("#select_deck_name").val() + '/' + $('#input_game_name').val();
@@ -29,22 +41,21 @@ Virtual board game between friends!
 {% block content %}
 <div class="container">
   <h2 class="title is-3">Create a new game</h2>
-  <p>Enter game name, choose the deck of cards, click the "create game" button, and share the link to your friends!</p>
+  <p>Enter the game name, choose a deck of cards, create the game, and share the link to your friends!</p>
   <div class="container">
     <!-- ------>
     <div class="field">
       <label class="label">Game name</label>
       <div class="control has-icons-left has-icons-right">
-        <input id="input_game_name" class="input is-primary" type="text" placeholder="Game name" pattern="^[^?&:&quot;'%#]+$" value="bulma">
+        <input id="input_game_name" class="input" type="text" placeholder="Game name">
         <span class="icon is-small is-left">
-      <i class="fas fa-pen"></i>
-    </span>
+          <i class="fas fa-pen"></i>
+        </span>
         <span class="icon is-small is-right">
-      <i class="fas fa-check"></i>
-    </span>
+          <i id="icon_game_name" class="fas fa-check"></i>
+        </span>
       </div>
-      <p class="help">Simply enter a name for the game, click the "create game" button, and share the link to your friends!</p>
-      <p class="help is-danger is-hidden">Game name should not contain any of these characters: ?, &, :, ', &quot;, %, #.</p>
+      <p id="help_game_name" class="help is-danger is-hidden">Game name should not contain any of these characters: ?, &, :, ', &quot;, %, #.</p>
     </div>
 
     <div class="field">
