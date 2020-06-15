@@ -44,6 +44,10 @@
         dummy.select();
         document.execCommand("copy");
         document.body.removeChild(dummy);
+        $(this).attr('data-tooltip', 'Copied!');
+        setTimeout(function(){
+          $('#button_copy_link').removeAttr('data-tooltip');
+        }, 2000);
       });
     });
   </script>
