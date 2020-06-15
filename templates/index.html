@@ -81,8 +81,8 @@ Virtual board game between friends!
           <div class="control has-icons-left">
             <div class="select is-medium">
               <select id="select_deck_name" name="deck_name">
-                {% for deck_name in deck_names %}
-                <option value={{ deck_name|tojson }}>{{ deck_name|title }}</option>
+                {% for deck_name in config.CARDS_DECKS.keys() %}
+                <option value={{ deck_name|tojson }} {{ 'selected' if deck_name=='dixit' }}>{{ deck_name|title }}</option>
                 {% endfor %}
               </select>
             </div>
