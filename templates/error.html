@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %} Error {% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block subtitle %}
+Virtual board game between friends!
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h2 class="title is-3">Error</h2>
+  <div class="notification is-danger is-light">
+    <p>{{ error_message }}</p>
+  </div>
+</div>
+
+{% endblock %}

@@ -8,6 +8,7 @@
   <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css">
   <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
   <link rel="stylesheet" href="/static/style.css">
   {% endblock %}
@@ -33,8 +34,8 @@
     <p>
       {% block footer %}
       <strong>DixIO</strong> by <a href="https://github.com/Framartin/dixio">Framartin</a>. The source code is licensed
-      <a href="https://github.com/Framartin/dixio/blob/master/LICENSE">GPL</a>. The cards, designed by Marie Cardouat,
-      are copyrighted by Libellud, and the original game authored by Jean-Louis Roubira.
+      <a href="https://github.com/Framartin/dixio/blob/master/LICENSE">GPL</a>.
+      {{ config.CARDS_DECKS[deck_name].license|safe if game_name }} The original game was authored by Jean-Louis Roubira.
       {% endblock %}
     </p>
   </div>

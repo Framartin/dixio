@@ -7,7 +7,8 @@
     // Socket.IO namespace
     namespace = '/play';
     // Socket.IO room for all players
-    game_name = '{{ game_name }}';
+    game_name = {{ game_name|tojson }};
+    deck_name = {{ deck_name|tojson }};
 
     // Connect to the Socket.IO server.
     var socket = io(namespace);
@@ -105,7 +106,7 @@
 
     // update images and data in hand
     function updateHand(value, index, array) {
-      $('#hand').find('.gamecard').eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
+      $('#hand').find('.gamecard').eq(index).find('img').attr('src', '/static/img/'+deck_name+'/'+value+'.png');
       $('#hand').find('.gamecard').eq(index).data('card-id', value);
     }
     socket.on('hand', function(msg) {
@@ -119,7 +120,7 @@
 
     // update images and data in table
     function updateTable(value, index, array) {
-      $('#table').find('.gamecard').eq(index).find('img').attr('src', '/static/img/dixit/'+value+'.png');
+      $('#table').find('.gamecard').eq(index).find('img').attr('src', '/static/img/'+deck_name+'/'+value+'.png');
       $('#table').find('.gamecard').eq(index).data('card-id', value);
     }
     socket.on('table', function(msg) {
@@ -155,7 +156,7 @@
     var last_turn_div = $('#last_turn');
     function updateCardLastTurn(value, index, array) {
       var card = last_turn_div.children().eq(index);
-      card.find('.gamecard > img').attr('src', '/static/img/dixit/'+value.id_card+'.png');
+      card.find('.gamecard > img').attr('src', '/static/img/'+deck_name+'/'+value.id_card+'.png');
       card.find('.card-owner').text(value.username);
       card.find('.card-points').text(value.points);
       if (value.correct_card) {
@@ -358,7 +359,7 @@ Dear <b id="username">{{ username }}</b>, welcome to the game {{ game_name|repla
 <!-- current pile -->
 <div class="container">
   <h2 class="title is-3">Pile</h2>
-  <p>Cards remaining: <b id="b_nb_cards_pile"></b></p>
+  <p>Cards remaining: <b id="b_nb_cards_pile">84</b></p>
 </div>
 
 

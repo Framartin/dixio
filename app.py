@@ -15,10 +15,21 @@ DEBUG = False
 MAX_NB_GAMES = 500
 MAX_NB_GAMES_CHECK = 50
 MAX_MINUTES_GAME_TIME = 6*60
+CARDS_DECKS = {
+    'dixit': {
+        'description': 'Deck of the first Dixit game.',
+        'license': 'The cards, designed by Marie Cardouat, are copyrighted by Libellud.',
+    },
+    'test': {
+        'description': 'test',
+        'license': 'CC by-sa 4.0.',
+    },
+}
 async_mode = "eventlet"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
+app.config['CARDS_DECKS'] = CARDS_DECKS
 socketio = SocketIO(app, async_mode=async_mode)
 
 
@@ -33,14 +44,16 @@ def index():
     return render_template('index.html', random_game_name=random_game_name)
 
 
-@app.route('/game/<game_name>')
-def game_route(game_name):
+@app.route('/game/<deck_name>/<game_name>')
+def game_route(deck_name, game_name):
+    if deck_name not in CARDS_DECKS:
+        return render_template('error.html', error_message="Card deck doesn't exist. Try again with another deck.")
     # set player's session, if not already set
     session['id_player'] = session.get('id_player', str(uuid4()))
     # create fake name if not already set
     lang = request.accept_languages.best_match(FAKER_LOCALES)
     session['username'] = session.get('username', Faker(lang).name())
-    return render_template('game.html', game_name=game_name, username=session['username'])
+    return render_template('game.html', deck_name=deck_name, game_name=game_name, username=session['username'])
 
 
 @socketio.on_error(namespace='/play')
