@@ -1,4 +1,4 @@
-Flask==1.1.2
+Flask==2.2.5
 flask-socketio==4.3.0
 eventlet==0.31.0
 Faker==4.1.0
